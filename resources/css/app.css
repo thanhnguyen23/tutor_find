@@ -1,0 +1,201 @@
+@import url('https://fonts.googleapis.com/css2?family=Bubblegum+Sans&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Playwrite+GB+J+Guides:ital@0;1&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bubblegum+Sans&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Playwrite+GB+J+Guides:ital@0;1&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap');
+@import "@fontsource/geist-sans";
+
+body {
+    font-family: 'Geist Sans', sans-serif !important;
+    /* font-family: "Poppins", sans-serif; */
+}
+
+:root {
+    --max-width: 1400px;
+    --primary-color: #000;
+    --secondary-color: #fff;
+    --font-size-mini: 0.8rem;
+    --font-size-small: 0.87rem;
+    --font-size-base: 1rem;
+    --font-size-medium: 1.1rem;
+    --font-size-large: 1.3rem;
+    --font-size-xlarge: 1.5rem;
+    --font-size-heading-1: 3rem;
+    --font-size-heading-2: 2.4rem;
+    --font-size-heading-3: 2rem;
+    --font-size-heading-4: 1.6rem;
+    --font-size-heading-5: 1.2rem;
+    --font-size-heading-6: 1rem;
+}
+
+.container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-internal-autofill-selected {
+    background-color: #fff !important; /* Thay đổi thành màu bạn muốn */
+    -webkit-box-shadow: 0 0 0 1000px #fff inset !important; /* Đảm bảo màu nền áp dụng */
+    box-shadow: 0 0 0 1000px #fff inset !important;
+    -webkit-text-fill-color: #000 !important; /* Màu chữ */
+}
+
+input[type="checkbox"] {
+    accent-color: black;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+
+.cancel-button {
+    padding: 0.66rem 1rem;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    color: #374151;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.cancel-button:hover {
+    background: #f3f4f6;
+}
+
+.btn-base {
+    padding: 0.66rem 1rem;
+    background: black;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.btn-base:disabled {
+    background: #8b8b8d;
+    cursor: not-allowed;
+}
+
+.btn-base:not(:disabled):hover {
+    background: #111827;
+}
+
+
+/* input */
+
+.form-group {
+    width: 100%;
+    position: relative;
+}
+
+.form-group>label {
+    margin-bottom: 0.5rem;
+}
+
+.form-group>label,
+.label-group>label {
+    display: block;
+    font-weight: 600;
+    color: #374151;
+    display: flex;
+    align-items: center;
+}
+
+.form-group .label-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.7rem;
+}
+
+.input-with-icon,
+.button-with-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.button-with-icon:hover .placeholder-button,
+.button-with-icon:hover .button-icon {
+    color: black;
+}
+
+.input-icon,
+.button-icon {
+    position: absolute;
+    left: 12px;
+    color: #9ca3af;
+}
+
+.form-group-containner {
+    display: flex;
+    gap: 1rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.form-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.form-group .input-with-icon input,
+.form-group .button-with-icon button {
+    padding: 0.8rem 1rem 0.8rem 2.3rem;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: black;
+}
+
+.form-group textarea:focus {
+    outline: none;
+    border-color: black;
+}
+
+/* modal */
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.modal-footer .btn-base {
+    padding: 0.66rem 1rem;
+    background: black;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.modal-footer .btn-base:disabled {
+    background: #8b8b8d;
+    cursor: not-allowed;
+}
+
+.modal-footer .btn-base:not(:disabled):hover {
+    background: #111827;
+}
