@@ -8,6 +8,7 @@
 
     const educationLevels = computed(() => store.state.configuration.educationLevels);
     const selectedLevelsOfSubject = ref([]);
+    const subjectLevels = ref([]);
     const userDataDetail = ref({});
     const userDataAction = reactive({
         firstName: '',
@@ -38,6 +39,44 @@
     const showEditEducationModal = ref(false);
     const showEditExperienceModal = ref(false);
     const showEditSubjectModal = ref(false);
+
+    const isValidSubjectInput = computed(() => {
+        return userDataAction.subject.years_of_experience &&
+               selectedLevelsOfSubject.value.length > 0 &&
+               selectedLevelsOfSubject.value.every(levelId => {
+                   const level = educationLevels.value.find(l => l.id === levelId);
+                   return level && level.price > 0;
+               });
+    });
+
+    const toggleLevelSelection = (level) => {
+        if (!selectedLevelsOfSubject.value.includes(level.id)) {
+            level.price = '';
+        }
+    };
+
+    const addSubjectWithExperience = () => {
+        if (userDataAction.subject.name && userDataAction.subject.years_of_experience) {
+            const levels = selectedLevelsOfSubject.value.map(levelId => {
+                const level = educationLevels.value.find(l => l.id === levelId);
+                return {
+                    level_id: levelId,
+                    price: level.price
+                };
+            });
+
+            userDataAction.subject.levels = levels;
+            showEditSubjectModal.value = false;
+            selectedLevelsOfSubject.value = [];
+            educationLevels.value.forEach(level => level.price = '');
+        }
+    };
+
+    const cancelAddSubject = () => {
+        showEditSubjectModal.value = false;
+        selectedLevelsOfSubject.value = [];
+        educationLevels.value.forEach(level => level.price = '');
+    };
 
     // Lấy dữ liệu user từ API
     const getUserDataDetail = async () => {
@@ -158,7 +197,7 @@
                 <div class="avatar">
                     <img src="/path-to-avatar.jpg" alt="Avatar">
                     <span class="status-dot"></span>
-                </div>
+        </div>
                 <h1 class="name">{{ userDataDetail.full_name }}</h1>
                 <div class="role-badge">{{ userDataDetail.role }}</div>
 
@@ -166,32 +205,32 @@
                     <div class="stars">★★★★★</div>
                     <span class="rating-score">4.8</span>
                     <span class="rating-count">(100 đánh giá)</span>
-                </div>
+        </div>
 
                 <div class="contact-info">
                     <div class="contact-item">
                         <div class="icon-wrapper">
                             <img class="icon-base" src="/images/email.svg" alt="Email">
-                        </div>
+        </div>
                         <span>{{ userDataDetail.email }}</span>
-                    </div>
+        </div>
                     <div class="contact-item">
                         <div class="icon-wrapper">
                             <img class="icon-base" src="/images/phone.svg" alt="Phone">
-                        </div>
+    </div>
                         <span>{{ userDataDetail.phone }}</span>
-                    </div>
+            </div>
                     <div class="contact-item">
                         <div class="icon-wrapper">
                             <img class="icon-base" src="/images/location.svg" alt="Location">
-                        </div>
-                        <span>{{ userDataDetail.address || 'Chưa cập nhật' }}</span>
-                    </div>
                 </div>
+                        <span>{{ userDataDetail.address || 'Chưa cập nhật' }}</span>
+                </div>
+            </div>
 
                 <div class="bio">
                     Giới thiệu bản thân: {{ userDataDetail.about_you || 'Chưa cập nhật' }}
-                </div>
+        </div>
 
                 <div class="actions">
                     <button class="btn-edit" @click="showEditProfileModal = true">
@@ -209,35 +248,35 @@
                     Thống kê
                 </h2>
                 <div class="stats-grid">
-                    <div class="stat-item">
+            <div class="stat-item">
                         <span class="stat-value">45</span>
                         <span class="stat-label">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon-base" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                             <span>Học sinh</span>
                         </span>
-                    </div>
-                    <div class="stat-item">
+            </div>
+            <div class="stat-item">
                         <span class="stat-value">320</span>
                         <span class="stat-label">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon-base" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>
                             <span>Buổi học</span>
                         </span>
-                    </div>
-                    <div class="stat-item">
+            </div>
+            <div class="stat-item">
                         <span class="stat-value">640</span>
                         <span class="stat-label">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon-base" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                             <span>Giờ dạy</span>
                         </span>
-                    </div>
-                    <div class="stat-item">
+            </div>
+            <div class="stat-item">
                         <span class="stat-value">98%</span>
                         <span class="stat-label">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon-base" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg>
                             <span>Hoàn thành</span>
                         </span>
-                    </div>
                 </div>
+            </div>
             </div>
 
             <div class="subjects-section">
@@ -262,9 +301,9 @@
                                 </div>
                                 <span class="experience-info-item-right level">{{ subject.years_of_experience }}/{{ subject.milestone }}</span>
                             </div>
-                            <div class="progress-bar">
+                <div class="progress-bar">
                                 <div class="progress" :style="{ width: subject.progress + '%' }"></div>
-                            </div>
+                </div>
                         </div>
                     </div>
                 </div>
@@ -282,7 +321,7 @@
                 <div class="tab active">
                     <img class="icon-base" src="/images/user.svg" alt="User">
                     <span>Tổng quan</span>
-                </div>
+                    </div>
                 <div class="tab">
                     <i class=" fas fa-calendar"></i>
                     <span>Lịch dạy</span>
@@ -290,12 +329,12 @@
                 <div class="tab">
                     <i class=" fas fa-star"></i>
                     <span>Đánh giá</span>
-                </div>
+            </div>
                 <div class="tab">
                     <i class=" fas fa-file"></i>
                     <span>Tài liệu</span>
                 </div>
-            </div>
+        </div>
 
             <!-- Education Section -->
             <div class="section">
@@ -356,8 +395,8 @@
                             <img class="edit-icon" src="/images/edit.svg" @click="showEditExperience(exp)" />
                         </div>
                     </div>
-                </div>
             </div>
+        </div>
 
             <!-- Performance Section -->
             <div class="section">
@@ -372,14 +411,14 @@
                     <div class="performance-card blue">
                         <div class="performance-icon">
                             <i class=" fas fa-chart-line"></i>
-                        </div>
+                </div>
                         <div class="performance-value">25%</div>
                         <div class="performance-label">Tăng điểm trung bình</div>
-                    </div>
+                </div>
                     <div class="performance-card green">
                         <div class="performance-icon">
                             <i class=" fas fa-bullseye"></i>
-                        </div>
+                </div>
                         <div class="performance-value">92%</div>
                         <div class="performance-label">Tỷ lệ đạt mục tiêu</div>
                     </div>
@@ -390,8 +429,8 @@
                         <div class="performance-value">96%</div>
                         <div class="performance-label">Mức độ hài lòng</div>
                     </div>
-                </div>
             </div>
+        </div>
 
             <!-- Reviews Section -->
             <div class="section">
@@ -399,26 +438,26 @@
                     <div class="header-left">
                         <svg class="icon-base" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
                         <span>Đánh giá gần đây</span>
-                    </div>
+            </div>
                     <a href="#" class="view-all">Xem tất cả <i class=" fas fa-chevron-right"></i></a>
                 </div>
 
                 <div class="reviews-list list-card">
                     <div v-for="review in reviews" :key="review.id" class="review-item card-item">
-                        <div class="reviewer-info">
-                            <img :src="review.avatar" :alt="review.name" class="reviewer-avatar">
+                    <div class="reviewer-info">
+                        <img :src="review.avatar" :alt="review.name" class="reviewer-avatar">
                             <div class="reviewer-details">
                                 <h6>{{ review.name }}</h6>
                                 <span class="review-date">{{ review.date }}</span>
-                            </div>
-                            <div class="review-rating">★★★★★</div>
                         </div>
-                        <p class="review-content">{{ review.content }}</p>
+                        <div class="review-rating">★★★★★</div>
                     </div>
+                    <p class="review-content">{{ review.content }}</p>
                 </div>
             </div>
         </div>
     </div>
+</div>
 </div>
 
 <base-modal :is-open="showEditProfileModal" title="Chỉnh sửa thông tin" description="Cập nhật thông tin cá nhân của bạn. Nhấn lưu khi hoàn tất." size="small" @close="showEditProfileModal = false">
@@ -568,37 +607,83 @@
         <div class="level-group">
             <label>Cấp độ dạy và học phí</label>
             <div class="level-list">
-                <div class="level-item" :class="{'active': selectedLevelsOfSubject.includes(level.id)}" v-for="level in educationLevels" :key="level.id" @click="addLevelToSubject(level.id)">
+                <div class="level-item" v-for="level in educationLevels" :key="level.id">
                     <div class="level-left">
                         <div class="level-icon" :class="level.class">
                             <img :src="level.image" :alt="level.name">
                         </div>
+                        <input
+                            type="checkbox"
+                            :value="level.id"
+                            v-model="selectedLevelsOfSubject"
+                            @change="toggleLevelSelection(level)">
                         <div class="level-name">{{ level.name }}</div>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" @click.stop>
                         <base-input
                             v-model="level.price"
                             type="number"
-                            label="Học phí"
                             placeholder="Nhập học phí"
                             unit="nghìn đồng/buổi"
                             :min="0"
                             :step="1"
                             :disabled="!selectedLevelsOfSubject.includes(level.id)"
-                            required
                         />
                     </div>
                 </div>
-            </div>
-            <div class="level-hint">
-                Chọn cấp độ dạy và nhập học phí tương ứng
-                <span class="selected-count">{{ selectedLevelsOfSubject.length }} cấp độ được chọn</span>
             </div>
         </div>
 
         <div class="modal-footer">
             <button class="cancel-button" @click="showEditSubjectModal = false">Hủy</button>
             <button class="btn-base" @click="updateSubject">Cập nhật</button>
+        </div>
+    </div>
+</base-modal>
+
+<base-modal :is-open="showExperienceModal" title="Thêm môn học" size="small" @close="cancelAddSubject">
+    <div class="modal-content">
+        <div class="form-group">
+            <label>Số năm kinh nghiệm dạy môn {{ selectedSubject?.name }}</label>
+            <div>
+                <input type="number" v-model="yearsOfExperience" placeholder="Ví dụ: 3" min="0" step="0.5">
+            </div>
+            <span class="hint">Nhập số năm kinh nghiệm giảng dạy môn học này</span>
+        </div>
+
+        <div class="level-group">
+            <label>Cấp độ dạy và học phí</label>
+            <div class="level-list">
+                <div class="level-item" v-for="level in educationLevels" :key="level.id">
+                    <div class="level-left">
+                        <div class="level-icon" :class="level.class">
+                            <img :src="level.image" :alt="level.name">
+                        </div>
+                        <input
+                            type="checkbox"
+                            :value="level.id"
+                            v-model="selectedLevelsOfSubject"
+                            @change="toggleLevelSelection(level)">
+                        <div class="level-name">{{ level.name }}</div>
+                    </div>
+                    <div class="form-group" @click.stop>
+                        <base-input
+                            v-model="level.price"
+                            type="number"
+                            placeholder="Nhập học phí"
+                            unit="nghìn đồng/buổi"
+                            :min="0"
+                            :step="1"
+                            :disabled="!selectedLevelsOfSubject.includes(level.id)"
+                        />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="cancel-button" @click="cancelAddSubject">Hủy</button>
+            <button class="btn-base" @click="addSubjectWithExperience" :disabled="!isValidSubjectInput">Thêm</button>
         </div>
     </div>
 </base-modal>
@@ -1046,7 +1131,7 @@
 
 .section-title {
     display: flex;
-    align-items: center;
+        align-items: center;
     gap: 8px;
     font-size: 16px;
     font-weight: 600;
@@ -1065,7 +1150,7 @@
     background: #F9FAFB;
     border-radius: 8px;
     padding: 16px;
-    text-align: center;
+        text-align: center;
     display: grid;
     justify-content: center;
 }
@@ -1357,14 +1442,14 @@
 
 .level-list {
     display: flex;
-    flex-direction: column;
+        flex-direction: column;
     gap: 12px;
     margin-top: 8px;
 }
 
 .level-left {
     display: flex;
-    align-items: center;
+        align-items: center;
     gap: 12px;
 }
 

@@ -1,259 +1,262 @@
 <script setup>
-    import {
-        ref,
-        computed,
-        onMounted,
-        reactive
-    } from 'vue';
-    import {
-        useRouter
-    } from 'vue-router';
-    import {
-        useStore
-    } from 'vuex';
-    import {
-        register
-    } from '@/api/auth.js';
+import {
+    ref,
+    computed,
+    onMounted,
+    reactive
+} from 'vue';
+import {
+    useRouter
+} from 'vue-router';
+import {
+    useStore
+} from 'vuex';
+import {
+    register
+} from '@/api/auth.js';
 
-    const store = useStore();
-    const router = useRouter();
+const store = useStore();
+const router = useRouter();
 
-    const educationLevels = computed(() => store.state.configuration.educationLevels);
-    const listSubjects = computed(() => store.state.configuration.subjects);
+const educationLevels = computed(() => store.state.configuration.educationLevels);
+const listSubjects = computed(() => store.state.configuration.subjects);
 
-    const ROLE_STUDENT = 0;
-    const ROLE_TUTOR = 1;
+const ROLE_STUDENT = 0;
+const ROLE_TUTOR = 1;
 
-    const showPassword = ref(false);
-    const showPasswordConfirmation = ref(false);
-    const isLoading = ref(false);
+const showPassword = ref(false);
+const showPasswordConfirmation = ref(false);
+const isLoading = ref(false);
 
-    const formDataErrors = reactive({});
-    const formData = reactive({
-        role: 0,
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        password: '',
-        passwordConfirmation: '',
-        educations: [{
-            school_name: '',
-            major: '',
-            time: '',
-            description: ''
-        }],
-        subjects: [],
-        experiences: [{
-            name: '',
-            position: '',
-            time: '',
-            description: ''
-        }],
-        educationLevels: null,
-        terms: false
-    });
+const formDataErrors = reactive({});
+const formData = reactive({
+    role: 0,
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    password: '',
+    passwordConfirmation: '',
+    educations: [{
+        school_name: '',
+        major: '',
+        time: '',
+        description: ''
+    }],
+    subjects: [],
+    experiences: [{
+        name: '',
+        position: '',
+        time: '',
+        description: ''
+    }],
+    educationLevels: null,
+    terms: false
+});
 
-    const subjectSearch = ref('');
-    const showSubjectDropdown = ref(false);
-    const showExperienceModal = ref(false);
-    const selectedSubject = ref(null);
-    const yearsOfExperience = ref('');
-    const selectedLevelsOfSubject = ref([]);
+const subjectSearch = ref('');
+const showSubjectDropdown = ref(false);
+const showExperienceModal = ref(false);
+const selectedSubject = ref(null);
+const yearsOfExperience = ref('');
+const selectedLevelsOfSubject = ref([]);
 
-    const validate = () => {
-        Object.keys(formDataErrors).forEach(key => delete formDataErrors[key]);
+const validate = () => {
+    Object.keys(formDataErrors).forEach(key => delete formDataErrors[key]);
 
-        if (formData.role != ROLE_STUDENT && formData.role != ROLE_TUTOR) {
-            formDataErrors.role = 'Vai trò không hợp lệ';
+    if (formData.role != ROLE_STUDENT && formData.role != ROLE_TUTOR) {
+        formDataErrors.role = 'Vai trò không hợp lệ';
+    }
+
+    if (!formData.firstName) {
+        formDataErrors.firstName = 'Họ không được để trống';
+    }
+
+    if (!formData.lastName) {
+        formDataErrors.lastName = 'Tên không được để trống';
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email) {
+        formDataErrors.email = 'Email không được để trống';
+    } else if (!emailRegex.test(formData.email)) {
+        formDataErrors.email = 'Email không hợp lệ';
+    }
+
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!formData.phone) {
+        formDataErrors.phone = 'Số điện thoại không được để trống';
+    } else if (!phoneRegex.test(formData.phone)) {
+        formDataErrors.phone = 'Số điện thoại phải là 10 chữ số';
+    }
+
+    if (!formData.password) {
+        formDataErrors.password = 'Mật khẩu không được để trống';
+    } else if (formData.password.length < 8) {
+        formDataErrors.password = 'Mật khẩu phải có ít nhất 8 ký tự';
+    }
+
+    if (!formData.passwordConfirmation) {
+        formDataErrors.passwordConfirmation = 'Xác nhận mật khẩu không được để trống';
+    } else if (formData.password !== formData.passwordConfirmation) {
+        formDataErrors.passwordConfirmation = 'Mật khẩu không khớp';
+    }
+
+    if (formData.role === ROLE_TUTOR) {
+        if (!formData.educations[0].school_name) {
+            formDataErrors.educations = 'Trường học không được để trống';
         }
 
-        if (!formData.firstName) {
-            formDataErrors.firstName = 'Họ không được để trống';
+        if (formData.subjects.length === 0) {
+            formDataErrors.subjects = 'Phải chọn ít nhất một môn học';
         }
 
-        if (!formData.lastName) {
-            formDataErrors.lastName = 'Tên không được để trống';
+        if (!formData.experiences[0].name) {
+            formDataErrors.experiences = 'Kinh nghiệm không được để trống';
         }
-
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!formData.email) {
-            formDataErrors.email = 'Email không được để trống';
-        } else if (!emailRegex.test(formData.email)) {
-            formDataErrors.email = 'Email không hợp lệ';
+    } else if (formData.role === ROLE_STUDENT) {
+        if (!formData.educationLevels) {
+            formDataErrors.educationLevels = 'Vui lòng chọn cấp học hiện tại';
         }
+    }
 
-        const phoneRegex = /^[0-9]{10}$/;
-        if (!formData.phone) {
-            formDataErrors.phone = 'Số điện thoại không được để trống';
-        } else if (!phoneRegex.test(formData.phone)) {
-            formDataErrors.phone = 'Số điện thoại phải là 10 chữ số';
-        }
+    if (!formData.terms) {
+        formDataErrors.terms = 'Bạn phải đồng ý với điều khoản';
+    }
 
-        if (!formData.password) {
-            formDataErrors.password = 'Mật khẩu không được để trống';
-        } else if (formData.password.length < 8) {
-            formDataErrors.password = 'Mật khẩu phải có ít nhất 8 ký tự';
-        }
+    return Object.keys(formDataErrors).length === 0;
+};
 
-        if (!formData.passwordConfirmation) {
-            formDataErrors.passwordConfirmation = 'Xác nhận mật khẩu không được để trống';
-        } else if (formData.password !== formData.passwordConfirmation) {
-            formDataErrors.passwordConfirmation = 'Mật khẩu không khớp';
-        }
+// Filter subjects based on search input
+const filteredSubjects = computed(() => {
+    if (!subjectSearch.value) return listSubjects.value;
+    return listSubjects.value.filter(subject =>
+        subject.name.toLowerCase().includes(subjectSearch.value.toLowerCase())
+    );
+});
 
-        if (formData.role === ROLE_TUTOR) {
-            if (!formData.educations[0].school_name) {
-                formDataErrors.educations = 'Trường học không được để trống';
-            }
+// Toggle subject selection and show modal
+const toggleSubject = (subject) => {
+    const index = formData.subjects.findIndex(s => s.id === subject.id);
+    if (index === -1) {
+        selectedSubject.value = subject;
+        yearsOfExperience.value = '';
+        showExperienceModal.value = true;
+    } else {
+        formData.subjects.splice(index, 1);
+    }
+};
 
-            if (formData.subjects.length === 0) {
-                formDataErrors.subjects = 'Phải chọn ít nhất một môn học';
-            }
+const checkSubjectSelected = (subject) => {
+    return formData.subjects.some(s => s.id === subject.id);
+};
 
-            if (!formData.experiences[0].name) {
-                formDataErrors.experiences = 'Kinh nghiệm không được để trống';
-            }
-        } else if (formData.role === ROLE_STUDENT) {
-            if (!formData.educationLevels) {
-                formDataErrors.educationLevels = 'Vui lòng chọn cấp học hiện tại';
-            }
-        }
-
-        if (!formData.terms) {
-            formDataErrors.terms = 'Bạn phải đồng ý với điều khoản';
-        }
-
-        return Object.keys(formDataErrors).length === 0;
-    };
-
-    // Filter subjects based on search input
-    const filteredSubjects = computed(() => {
-        if (!subjectSearch.value) return listSubjects.value;
-        return listSubjects.value.filter(subject =>
-            subject.name.toLowerCase().includes(subjectSearch.value.toLowerCase())
-        );
-    });
-
-    // Toggle subject selection and show modal
-    const toggleSubject = (subject) => {
-        const index = formData.subjects.findIndex(s => s.id === subject.id);
-        if (index === -1) {
-            selectedSubject.value = subject;
-            yearsOfExperience.value = '';
-            showExperienceModal.value = true;
-        } else {
-            formData.subjects.splice(index, 1);
-        }
-    };
-
-    const checkSubjectSelected = (subject) => {
-        return formData.subjects.some(s => s.id === subject.id);
-    };
-
-    const addSubjectWithExperience = () => {
-        if (selectedSubject.value && yearsOfExperience.value) {
-            formData.subjects.push({
-                id: selectedSubject.value.id,
-                name: selectedSubject.value.name,
-                years_of_experience: yearsOfExperience.value
-            });
-            showExperienceModal.value = false;
-            selectedSubject.value = null;
-            yearsOfExperience.value = '';
-        }
-    };
-
-    const cancelAddSubject = () => {
+const addSubjectWithExperience = () => {
+    if (selectedSubject.value && yearsOfExperience.value) {
+        formData.subjects.push({
+            id: selectedSubject.value.id,
+            name: selectedSubject.value.name,
+            years_of_experience: yearsOfExperience.value
+        });
         showExperienceModal.value = false;
         selectedSubject.value = null;
         yearsOfExperience.value = '';
-    };
+    }
+};
 
-    const removeSubject = (subject) => {
-        const index = formData.subjects.findIndex(s => s.id === subject.id);
-        if (index !== -1) {
-            formData.subjects.splice(index, 1);
-        }
-    };
+const cancelAddSubject = () => {
+    showExperienceModal.value = false;
+    selectedSubject.value = null;
+    yearsOfExperience.value = '';
+};
 
-    const addEducationLevel = (item) => {
-        formData.educationLevels = item.id;
-    };
+const removeSubject = (subject) => {
+    const index = formData.subjects.findIndex(s => s.id === subject.id);
+    if (index !== -1) {
+        formData.subjects.splice(index, 1);
+    }
+};
 
-    const addEducation = () => {
-        formData.educations.push({
-            school_name: '',
-            major: '',
-            start_date: '',
-            end_date: ''
-        });
-    };
+const addEducationLevel = (item) => {
+    formData.educationLevels = item.id;
+};
 
-    const removeEducation = (index) => {
-        formData.educations.splice(index, 1);
-    };
-
-    const addExperience = () => {
-        formData.experiences.push({
-            name: '',
-            position: '',
-            start_date: '',
-            end_date: ''
-        });
-    };
-
-    const removeExperience = (index) => {
-        formData.experiences.splice(index, 1);
-    };
-
-    const resetFormData = () => {
-        Object.keys(formDataErrors).forEach(key => delete formDataErrors[key]);
-    };
-
-    const handleRegister = async () => {
-        if (!validate()) {
-            return;
-        }
-
-        try {
-            isLoading.value = true;
-            const response = await register(formData);
-
-            store.dispatch('updateAuth', { token: response.token, user: response.user });
-            router.push('/');
-
-            // Redirect based on role
-            /*
-            if (formData.role === ROLE_STUDENT) {
-                router.push('/student/dashboard');
-            } else {
-                router.push('/tutor/dashboard');
-            }
-            */
-        } catch (error) {
-            if (error.response?.errors) {
-                Object.assign(formDataErrors, error.response.data.errors);
-            } else {
-                formDataErrors.general = 'Có lỗi xảy ra, vui lòng thử lại sau';
-            }
-        } finally {
-            isLoading.value = false;
-        }
-    };
-
-    const openLoginModal = () => {
-        router.push('/login');
-    };
-
-    onMounted(() => {
-        document.addEventListener('click', (e) => {
-            const subjectSearch = document.querySelector('.subject-search');
-            if (subjectSearch && !subjectSearch.contains(e.target)) {
-                showSubjectDropdown.value = false;
-            }
-        });
+const addEducation = () => {
+    formData.educations.push({
+        school_name: '',
+        major: '',
+        start_date: '',
+        end_date: ''
     });
+};
+
+const removeEducation = (index) => {
+    formData.educations.splice(index, 1);
+};
+
+const addExperience = () => {
+    formData.experiences.push({
+        name: '',
+        position: '',
+        start_date: '',
+        end_date: ''
+    });
+};
+
+const removeExperience = (index) => {
+    formData.experiences.splice(index, 1);
+};
+
+const resetFormData = () => {
+    Object.keys(formDataErrors).forEach(key => delete formDataErrors[key]);
+};
+
+const handleRegister = async () => {
+    if (!validate()) {
+        return;
+    }
+
+    try {
+        isLoading.value = true;
+        const response = await register(formData);
+
+        store.dispatch('updateAuth', {
+            token: response.token,
+            user: response.user
+        });
+        router.push('/');
+
+        // Redirect based on role
+        /*
+        if (formData.role === ROLE_STUDENT) {
+            router.push('/student/dashboard');
+        } else {
+            router.push('/tutor/dashboard');
+        }
+        */
+    } catch (error) {
+        if (error.response?.errors) {
+            Object.assign(formDataErrors, error.response.data.errors);
+        } else {
+            formDataErrors.general = 'Có lỗi xảy ra, vui lòng thử lại sau';
+        }
+    } finally {
+        isLoading.value = false;
+    }
+};
+
+const openLoginModal = () => {
+    router.push('/login');
+};
+
+onMounted(() => {
+    document.addEventListener('click', (e) => {
+        const subjectSearch = document.querySelector('.subject-search');
+        if (subjectSearch && !subjectSearch.contains(e.target)) {
+            showSubjectDropdown.value = false;
+        }
+    });
+});
 </script>
 
 <template>
@@ -277,7 +280,7 @@
             <div class="form-group-containner">
                 <div class="form-group">
                     <div class="label-group">
-                    <label for="firstName">Họ</label>
+                        <label for="firstName">Họ</label>
                         <span>*</span>
                     </div>
                     <div class="input-with-icon">
@@ -290,7 +293,7 @@
                 </div>
                 <div class="form-group">
                     <div class="label-group">
-                    <label for="lastName">Tên</label>
+                        <label for="lastName">Tên</label>
                         <span>*</span>
                     </div>
                     <div class="input-with-icon">
@@ -305,7 +308,7 @@
 
             <div class="form-group">
                 <div class="label-group">
-                <label for="email">Email</label>
+                    <label for="email">Email</label>
                     <span>*</span>
                 </div>
                 <div class="input-with-icon">
@@ -319,7 +322,7 @@
 
             <div class="form-group">
                 <div class="label-group">
-                <label for="phone">Số điện thoại</label>
+                    <label for="phone">Số điện thoại</label>
                     <span>*</span>
                 </div>
                 <div class="input-with-icon">
@@ -334,7 +337,7 @@
             <div class="form-group-containner">
                 <div class="form-group">
                     <div class="label-group">
-                    <label for="password">Mật khẩu</label>
+                        <label for="password">Mật khẩu</label>
                         <span>*</span>
                     </div>
                     <div class="input-with-icon">
@@ -357,7 +360,7 @@
 
                 <div class="form-group">
                     <div class="label-group">
-                    <label for="passwordConfirmation">Xác nhận mật khẩu</label>
+                        <label for="passwordConfirmation">Xác nhận mật khẩu</label>
                         <span>*</span>
                     </div>
                     <div class="input-with-icon">
@@ -380,7 +383,7 @@
             </div>
 
             <div v-if="formData.role === 1" class="tutor-fields">
-            <div class="form-group">
+                <div class="form-group">
                     <label>Môn học giảng dạy</label>
                     <div class="subjects-input">
                         <div style="position: relative;">
@@ -427,9 +430,9 @@
                             </span>
                         </div>
                     </div>
-            </div>
+                </div>
 
-            <div class="form-group">
+                <div class="form-group">
                     <div class="label-group">
                         <label>Trường học</label>
                         <button type="button" class="add-button" @click="addEducation">
@@ -494,9 +497,9 @@
                         </div>
                     </div>
                     <span v-if="formDataErrors.educations" class="error-message">{{ formDataErrors.educations }}</span>
-            </div>
+                </div>
 
-            <div class="form-group">
+                <div class="form-group">
                     <div class="label-group">
                         <label>Kinh nghiệm giảng dạy</label>
                         <button type="button" class="add-button" @click="addExperience">
@@ -620,6 +623,37 @@
             </div>
             <span class="hint">Nhập số năm kinh nghiệm giảng dạy môn học này</span>
         </div>
+
+        <!-- <div class="level-group">
+            <label>Cấp độ dạy và học phí</label>
+            <div class="level-list">
+                <div class="level-item" v-for="level in educationLevels" :key="level.id">
+                    <div class="level-left">
+                        <div class="level-icon" :class="level.class">
+                            <img :src="level.image" :alt="level.name">
+                        </div>
+                        <input
+                            type="checkbox"
+                            :value="level.id"
+                            v-model="selectedLevelsOfSubject"
+                            @change="toggleLevelSelection(level)">
+                        <div class="level-name">{{ level.name }}</div>
+                    </div>
+                    <div class="form-group" @click.stop>
+                        <base-input
+                            v-model="level.price"
+                            type="number"
+                            placeholder="Nhập học phí"
+                            unit="nghìn đồng/buổi"
+                            :min="0"
+                            :step="1"
+                            :disabled="!selectedLevelsOfSubject.includes(level.id)"
+                        />
+                    </div>
+                </div>
+            </div>
+        </div> -->
+
         <div class="modal-footer">
             <button class="cancel-button" @click="cancelAddSubject">Hủy</button>
             <button class="btn-base" @click="addSubjectWithExperience" :disabled="!yearsOfExperience">Thêm</button>
@@ -627,7 +661,6 @@
     </div>
 </base-modal>
 </template>
-
 
 <style scoped>
 .main-register {
@@ -1230,7 +1263,6 @@ input.has-subjects {
     max-height: 300px;
     overflow-y: auto;
 }
-
 
 .level-group {
     display: grid;
