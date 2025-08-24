@@ -12,11 +12,11 @@ const notification = {
             store.dispatch('updateShowNotification', {
                 show: false,
                 message: '',
-                type: 'error',
+                type: data.type,
             });
         }, data.time);
     },
-    notificationError(message) {
+    error(message) {
         const data = {
             message: message,
             type: 'error',
@@ -24,7 +24,7 @@ const notification = {
         }
         this.notification(data);
     },
-    notificationSuccess(message) {
+    success(message) {
         const data = {
             message: message,
             type: 'success',
@@ -32,7 +32,23 @@ const notification = {
         }
         this.notification(data);
     },
-    notificationErrorNotEmpty(message) {
+    info(message) {
+        const data = {
+            message: message,
+            type: 'info',
+            time: 3000,
+        }
+        this.notification(data);
+    },
+    warring(message) {
+        const data = {
+            message: message,
+            type: 'warning',
+            time: 3000,
+        }
+        this.notification(data);
+    },
+    errorNotEmpty(message) {
         const data = {
             message: message ?? "Không được để trống, vui lòng nhập dữ liệu",
             type: 'error',

@@ -13,6 +13,12 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         // $schedule->command('inspire')->hourly();
+
+        // Send profile completion reminders every Monday at 9 AM
+        $schedule->command('tutors:send-completion-reminders')
+            ->weekly()
+            ->mondays()
+            ->at('09:00');
     }
 
     /**

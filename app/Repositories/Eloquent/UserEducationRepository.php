@@ -28,8 +28,23 @@ class UserEducationRepository implements UserEducationRepositoryInterface
     public function update(array $data, $id)
     {
         $userEducation = $this->model->find($id);
+        if (!$userEducation) {
+            return null;
+        }
         $userEducation->update($data);
         return $userEducation;
+    }
+
+    public function delete(int $id)
+    {
+        $userEducation = $this->model->find($id);
+        $userEducation->delete();
+        return $userEducation;
+    }
+
+    public function find(int $id)
+    {
+        return $this->model->find($id);
     }
 
     public function findByUserId(int $userId)

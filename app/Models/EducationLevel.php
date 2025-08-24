@@ -11,6 +11,7 @@ class EducationLevel extends Model
 
     protected $fillable = [
         'name',
+        'description',
         'slug',
         'image',
     ];
@@ -18,5 +19,10 @@ class EducationLevel extends Model
     public function userEducationLevels()
     {
         return $this->hasMany(UserEducationLevel::class);
+    }
+
+    public function userPackages()
+    {
+        return $this->hasMany(UserPackage::class);
     }
 }

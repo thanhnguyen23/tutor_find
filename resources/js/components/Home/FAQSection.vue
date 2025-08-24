@@ -61,7 +61,7 @@ const faqs = [
 
 <style scoped>
 .faq-section {
-    padding: 80px 0;
+    padding: 0 0 4rem 0;
     background: white;
 }
 
@@ -100,7 +100,7 @@ const faqs = [
 
 .faq-list {
     max-width: 800px;
-    margin: 0 auto;
+    margin: auto;
 }
 
 .faq-item {
@@ -162,7 +162,7 @@ const faqs = [
 
 @media (max-width: 768px) {
     .faq-section {
-        padding: 64px 0;
+        padding: 3rem 0;
     }
 
     .section-title {

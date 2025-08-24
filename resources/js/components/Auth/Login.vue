@@ -17,25 +17,37 @@
 
         <form @submit.prevent="handleSubmit" class="login-form">
             <div class="form-group" v-if="formType === 'email'">
-                <label for="email">Email</label>
-                <div class="input-with-icon">
-                    <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <BaseInput
+                  v-model="formData.email"
+                  type="email"
+                  label="Email"
+                  placeholder="example@gmail.com"
+                  :error="formData.errors.email"
+                  required
+                >
+                  <template #icon>
+                    <svg class="icon-md" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
-                    <input type="email" id="email" v-model="formData.email" class="form-input" :class="{ 'error': formData.errors.email }" placeholder="example@gmail.com" required>
-                </div>
-                <span v-if="formData.errors.email" class="error-message">{{ formData.errors.email }}</span>
+                  </template>
+                </BaseInput>
             </div>
 
             <div class="form-group" v-if="formType === 'phone'">
-                <label for="phone">Số điện thoại</label>
-                <div class="input-with-icon">
-                    <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <BaseInput
+                  v-model="formData.phone"
+                  type="phone"
+                  label="Số điện thoại"
+                  placeholder="0123456789"
+                  :error="formData.errors.phone"
+                  required
+                >
+                  <template #icon>
+                    <svg class="icon-md" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
-                    <input type="phone" id="phone" v-model="formData.phone" class="form-input" :class="{ 'error': formData.errors.phone }" placeholder="0123456789" required>
-                </div>
-                <span v-if="formData.errors.phone" class="error-message">{{ formData.errors.phone }}</span>
+                  </template>
+                </BaseInput>
             </div>
 
             <div class="form-group">
@@ -43,11 +55,20 @@
                     <label for="password">Mật khẩu</label>
                     <a href="#" class="forgot-password">Quên mật khẩu?</a>
                 </div>
-                <div class="input-with-icon">
-                    <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <BaseInput
+                  v-model="formData.password"
+                  :type="showPassword ? 'text' : 'password'"
+                  label=""
+                  placeholder="Nhập mật khẩu"
+                  :error="formData.errors.password"
+                  required
+                >
+                  <template #icon>
+                    <svg class="icon-md" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
-                    <input :type="showPassword ? 'text' : 'password'" id="password" v-model="formData.password" class="form-input" :class="{ 'error': formData.errors.password }" placeholder="Nhập mật khẩu" required>
+                  </template>
+                  <template #unit>
                     <button type="button" class="toggle-password" @click="showPassword = !showPassword">
                         <svg v-if="!showPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -57,12 +78,12 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
                         </svg>
                     </button>
-                </div>
-                <span v-if="formData.errors.password" class="error-message">{{ formData.errors.password }}</span>
+                  </template>
+                </BaseInput>
             </div>
 
             <div class="form-group">
-                <button type="submit" class="submit-button" :disabled="isLoading">
+                <button type="submit" class="btn-xl btn-primary" :disabled="isLoading">
                     <span v-if="!isLoading">Đăng nhập</span>
                     <span v-else class="loading-spinner"></span>
                 </button>
@@ -101,6 +122,7 @@ import {
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 import { login } from '@api/auth';
+import BaseInput from '../BaseInput.vue';
 
 const router = useRouter();
 const store = useStore();
@@ -232,14 +254,6 @@ const openRegisterModal = () => {
     align-items: center;
 }
 
-.input-icon {
-    position: absolute;
-    left: 12px;
-    width: 20px;
-    height: 20px;
-    color: #9ca3af;
-}
-
 .form-input {
     width: 100%;
     padding: 12px 16px 12px 40px;
@@ -307,30 +321,6 @@ const openRegisterModal = () => {
 
 .forgot-password:hover {
     text-decoration: underline;
-}
-
-.submit-button {
-    width: 100%;
-    padding: 12px;
-    background: black;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.submit-button:hover {
-    background: #1a1a1a;
-}
-
-.submit-button:disabled {
-    background: #d1d5db;
-    cursor: not-allowed;
 }
 
 .loading-spinner {

@@ -1,10 +1,10 @@
 <template>
-<footer class="footer">
+<footer class="footer" v-if="!hiddenFooter">
     <div class="container">
         <div class="footer-top">
             <div class="footer-brand">
                 <div class="logo">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-book-open h-5 w-5 text-primary-foreground"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-book-open h-5 w-5 text-primary-foreground"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
                     <span class="logo-text">EduTutor</span>
                 </div>
                 <p class="brand-description">
@@ -95,7 +95,12 @@
 
 
 <script setup>
-    </script>
+    import { useStore } from 'vuex';
+    import { computed } from 'vue';
+
+    const store = useStore();
+    const hiddenFooter = computed(() => store.getters.hiddenFooter);
+</script>
 
 
 <style scoped>
@@ -108,7 +113,7 @@
 
 .container {
     max-width: 1300px;
-    margin: 0 auto;
+    margin: auto;
 }
 
 .footer-top {
@@ -125,8 +130,9 @@
 .logo {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 24px;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    color: var(--color-primary);
 }
 
 .logo-image {
@@ -135,14 +141,14 @@
 }
 
 .logo-text {
-    font-size: 24px;
+    font-size: var(--font-size-heading-5);
     font-weight: 700;
 }
 
 .brand-description {
     color: #9ca3af;
     line-height: 1.6;
-    margin-bottom: 24px;
+    margin-bottom: 1rem;
 }
 
 .social-links {
@@ -181,7 +187,7 @@
 .group-title {
     font-size: 18px;
     font-weight: 600;
-    margin-bottom: 24px;
+    margin-bottom: 1rem;
     color: black;
 }
 
@@ -209,8 +215,7 @@
 .links-list li .icon {
     width: 20px;
     height: 20px;
-    margin-right: 8px;
-    color: black;
+    margin-right: 5px;
 }
 
 .footer-bottom {

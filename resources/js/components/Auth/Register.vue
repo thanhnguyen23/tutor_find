@@ -31,25 +31,12 @@ const isLoading = ref(false);
 const formDataErrors = reactive({});
 const formData = reactive({
     role: 0,
-    firstName: '',
-    lastName: '',
+    first_name: '',
+    last_name: '',
     email: '',
     phone: '',
     password: '',
     passwordConfirmation: '',
-    educations: [{
-        school_name: '',
-        major: '',
-        time: '',
-        description: ''
-    }],
-    subjects: [],
-    experiences: [{
-        name: '',
-        position: '',
-        time: '',
-        description: ''
-    }],
     educationLevels: null,
     terms: false
 });
@@ -68,12 +55,12 @@ const validate = () => {
         formDataErrors.role = 'Vai trò không hợp lệ';
     }
 
-    if (!formData.firstName) {
-        formDataErrors.firstName = 'Họ không được để trống';
+    if (!formData.first_name) {
+        formDataErrors.first_name = 'Họ không được để trống';
     }
 
-    if (!formData.lastName) {
-        formDataErrors.lastName = 'Tên không được để trống';
+    if (!formData.last_name) {
+        formDataErrors.last_name = 'Tên không được để trống';
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -102,22 +89,8 @@ const validate = () => {
         formDataErrors.passwordConfirmation = 'Mật khẩu không khớp';
     }
 
-    if (formData.role === ROLE_TUTOR) {
-        if (!formData.educations[0].school_name) {
-            formDataErrors.educations = 'Trường học không được để trống';
-        }
-
-        if (formData.subjects.length === 0) {
-            formDataErrors.subjects = 'Phải chọn ít nhất một môn học';
-        }
-
-        if (!formData.experiences[0].name) {
-            formDataErrors.experiences = 'Kinh nghiệm không được để trống';
-        }
-    } else if (formData.role === ROLE_STUDENT) {
-        if (!formData.educationLevels) {
-            formDataErrors.educationLevels = 'Vui lòng chọn cấp học hiện tại';
-        }
+    if (formData.role === ROLE_STUDENT && !formData.educationLevels) {
+        formDataErrors.educationLevels = 'Vui lòng chọn cấp học hiện tại';
     }
 
     if (!formData.terms) {
@@ -225,15 +198,6 @@ const handleRegister = async () => {
             user: response.user
         });
         router.push('/');
-
-        // Redirect based on role
-        /*
-        if (formData.role === ROLE_STUDENT) {
-            router.push('/student/dashboard');
-        } else {
-            router.push('/tutor/dashboard');
-        }
-        */
     } catch (error) {
         if (error.response?.errors) {
             Object.assign(formDataErrors, error.response.data.errors);
@@ -277,292 +241,129 @@ onMounted(() => {
         </div>
 
         <form @submit.prevent="handleSubmit" class="register-form">
-            <div class="form-group-containner">
+            <div class="form-group-container">
                 <div class="form-group">
-                    <div class="label-group">
-                        <label for="firstName">Họ</label>
-                        <span>*</span>
-                    </div>
-                    <div class="input-with-icon">
-                        <svg class="input-icon icon-base" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                        <input type="text" id="firstName" v-model="formData.firstName" placeholder="Nguyễn" required>
-                    </div>
-                    <span v-if="formDataErrors.firstName" class="error-message">{{ formDataErrors.firstName }}</span>
+                    <base-input
+                        v-model="formData.first_name"
+                        type="text"
+                        label="Họ"
+                        placeholder="Nguyễn"
+                        :error="formDataErrors.first_name"
+                        required
+                    >
+                        <template #icon>
+                            <svg class="input-icon icon-base icon-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                        </template>
+                    </base-input>
                 </div>
                 <div class="form-group">
-                    <div class="label-group">
-                        <label for="lastName">Tên</label>
-                        <span>*</span>
-                    </div>
-                    <div class="input-with-icon">
-                        <svg class="input-icon icon-base" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                        <input type="text" id="lastName" v-model="formData.lastName" placeholder="Văn A" required>
-                    </div>
-                    <span v-if="formDataErrors.lastName" class="error-message">{{ formDataErrors.lastName }}</span>
+                    <base-input
+                        v-model="formData.last_name"
+                        type="text"
+                        label="Tên"
+                        placeholder="Văn A"
+                        :error="formDataErrors.last_name"
+                        required
+                    >
+                        <template #icon>
+                            <svg class="input-icon icon-base icon-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                        </template>
+                    </base-input>
                 </div>
             </div>
 
             <div class="form-group">
-                <div class="label-group">
-                    <label for="email">Email</label>
-                    <span>*</span>
-                </div>
-                <div class="input-with-icon">
-                    <svg class="input-icon icon-base" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    <input type="email" id="email" v-model="formData.email" placeholder="name@example.com" required>
-                </div>
-                <span v-if="formDataErrors.email" class="error-message">{{ formDataErrors.email }}</span>
+                <base-input
+                    v-model="formData.email"
+                    type="email"
+                    label="Email"
+                    placeholder="name@example.com"
+                    :error="formDataErrors.email"
+                    required
+                >
+                    <template #icon>
+                        <svg class="input-icon icon-base icon-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                    </template>
+                </base-input>
             </div>
 
             <div class="form-group">
-                <div class="label-group">
-                    <label for="phone">Số điện thoại</label>
-                    <span>*</span>
-                </div>
-                <div class="input-with-icon">
-                    <svg class="input-icon icon-base" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                    </svg>
-                    <input type="tel" id="phone" v-model="formData.phone" placeholder="0912345678" required>
-                </div>
-                <span v-if="formDataErrors.phone" class="error-message">{{ formDataErrors.phone }}</span>
+                <base-input
+                    v-model="formData.phone"
+                    type="tel"
+                    label="Số điện thoại"
+                    placeholder="0912345678"
+                    :error="formDataErrors.phone"
+                    required
+                >
+                    <template #icon>
+                        <svg class="input-icon icon-base icon-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                        </svg>
+                    </template>
+                </base-input>
             </div>
 
-            <div class="form-group-containner">
+            <div class="form-group-container">
                 <div class="form-group">
-                    <div class="label-group">
-                        <label for="password">Mật khẩu</label>
-                        <span>*</span>
-                    </div>
-                    <div class="input-with-icon">
-                        <svg class="input-icon icon-base" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
-                        <input :type="showPassword ? 'text' : 'password'" id="password" v-model="formData.password" placeholder="••••••" required>
-                        <button type="button" class="toggle-password" @click="showPassword = !showPassword">
-                            <svg v-if="!showPassword" class="icon-base" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    <base-input
+                        v-model="formData.password"
+                        :type="showPassword ? 'text' : 'password'"
+                        label="Mật khẩu"
+                        placeholder="••••••"
+                        :error="formDataErrors.password"
+                        required
+                    >
+                        <template #icon>
+                            <svg class="input-icon icon-base icon-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                             </svg>
-                            <svg v-else class="icon-base" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                            </svg>
-                        </button>
-                    </div>
-                    <span v-if="formDataErrors.password" class="error-message">{{ formDataErrors.password }}</span>
-                </div>
-
-                <div class="form-group">
-                    <div class="label-group">
-                        <label for="passwordConfirmation">Xác nhận mật khẩu</label>
-                        <span>*</span>
-                    </div>
-                    <div class="input-with-icon">
-                        <svg class="input-icon icon-base" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
-                        <input :type="showPasswordConfirmation ? 'text' : 'password'" id="passwordConfirmation" v-model="formData.passwordConfirmation" placeholder="••••••" required>
-                        <button type="button" class="toggle-password" @click="showPasswordConfirmation = !showPasswordConfirmation">
-                            <svg v-if="!showPasswordConfirmation" class="icon-base" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
-                            <svg v-else class="icon-base" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                            </svg>
-                        </button>
-                    </div>
-                    <span v-if="formDataErrors.passwordConfirmation" class="error-message">{{ formDataErrors.passwordConfirmation }}</span>
-                </div>
-            </div>
-
-            <div v-if="formData.role === 1" class="tutor-fields">
-                <div class="form-group">
-                    <label>Môn học giảng dạy</label>
-                    <div class="subjects-input">
-                        <div style="position: relative;">
-                            <div class="button-with-icon">
-                                <svg class="icon-base button-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
+                        </template>
+                        <template #unit>
+                            <button type="button" class="toggle-password" @click="showPassword = !showPassword">
+                                <svg v-if="!showPassword" class="icon-base icon-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                 </svg>
-                                <button type="button" class="subject-select-button" @click="showSubjectDropdown = !showSubjectDropdown">
-                                    <span class="placeholder-button">Tìm và chọn môn học</span>
-                                    <svg class="select-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <polyline points="6 9 12 15 18 9"></polyline>
-                                    </svg>
-                                </button>
-                            </div>
-                            <div v-if="showSubjectDropdown" class="subject-dropdown">
-                                <div class="search-input">
-                                    <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <circle cx="11" cy="11" r="8"></circle>
-                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                                    </svg>
-                                    <input type="text" v-model="subjectSearch" placeholder="Tìm kiếm môn học..." @click.stop>
-                                </div>
-                                <div class="subject-list">
-                                    <div v-for="subject in filteredSubjects" :key="subject.id" class="subject-option" :class="{ 'selected': checkSubjectSelected(subject) }" @click.stop="toggleSubject(subject)">
-                                        <span class="checkbox">
-                                            <svg v-if="checkSubjectSelected(subject)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <polyline points="20 6 9 17 4 12"></polyline>
-                                            </svg>
-                                        </span>
-                                        {{ subject.name }}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <span v-if="formDataErrors.subjects" class="error-message">{{ formDataErrors.subjects }}</span>
-                        </div>
-
-                        <div class="selected-subjects" v-if="formData.subjects.length">
-                            <span v-for="subject in formData.subjects" :key="subject.id" class="subject-tag">
-                                {{ subject.name }} ({{ subject.years_of_experience }} năm)
-                                <button type="button" @click="removeSubject(subject)">
-                                    <img src="/images/cancel.svg" class="icon-base" />
-                                </button>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="label-group">
-                        <label>Trường học</label>
-                        <button type="button" class="add-button" @click="addEducation">
-                            <svg class="icon-base" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
-                            Thêm trường học
-                        </button>
-                    </div>
-                    <div class="education-input">
-                        <div v-for="(edu, index) in formData.educations" :key="index" class="education-item">
-                            <div class="form-row">
-                                <div class="form-col">
-                                    <label>Tên trường học</label>
-                                    <div class="input-with-icon">
-                                        <svg class="input-icon icon-base" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"></path>
-                                            <path d="M22 10v6"></path>
-                                            <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"></path>
-                                        </svg>
-                                        <input type="text" v-model="edu.school_name" placeholder="Ví dụ: Đại học Quốc gia Hà Nội" required>
-                                    </div>
-                                </div>
-                                <div class="form-col">
-                                    <label>Chuyên ngành</label>
-                                    <div class="input-with-icon">
-                                        <svg class="input-icon icon-base" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"></path>
-                                            <path d="M22 10v6"></path>
-                                            <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"></path>
-                                        </svg>
-                                        <input type="text" v-model="edu.major" placeholder="Ví dụ: Toán học, Vật lý" required>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-col">
-                                <label>Thời gian</label>
-                                <div class="input-with-icon">
-                                    <svg class="input-icon icon-base" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                                    </svg>
-                                    <input type="text" v-model="edu.time" placeholder="VD: 2020-2024" required>
-                                </div>
-                            </div>
-                            <div class="form-col">
-                                <label>Mô tả chi tiết</label>
-                                <div class="input">
-                                    <textarea v-model="edu.description" placeholder="Nhập mô tả" rows="4"></textarea>
-                                </div>
-                            </div>
-
-                            <button v-if="formData.educations.length > 1" type="button" class="remove-button" @click="removeEducation(index)">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                <svg v-else class="icon-base icon-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
                                 </svg>
                             </button>
-                        </div>
-                    </div>
-                    <span v-if="formDataErrors.educations" class="error-message">{{ formDataErrors.educations }}</span>
+                        </template>
+                    </base-input>
                 </div>
-
                 <div class="form-group">
-                    <div class="label-group">
-                        <label>Kinh nghiệm giảng dạy</label>
-                        <button type="button" class="add-button" @click="addExperience">
-                            <svg class="icon-base" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <base-input
+                        v-model="formData.passwordConfirmation"
+                        :type="showPasswordConfirmation ? 'text' : 'password'"
+                        label="Xác nhận mật khẩu"
+                        placeholder="••••••"
+                        :error="formDataErrors.passwordConfirmation"
+                        required
+                    >
+                        <template #icon>
+                            <svg class="input-icon icon-base icon-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                             </svg>
-                            Thêm kinh nghiệm
-                        </button>
-                    </div>
-                    <div class="experience-input">
-                        <div v-for="(exp, index) in formData.experiences" :key="index" class="experience-item">
-                            <div class="form-row">
-                                <div class="form-col">
-                                    <label>Tên tổ chức/trường học</label>
-                                    <div class="input-with-icon">
-                                        <svg class="input-icon icon-base" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"></path>
-                                            <path d="M22 10v6"></path>
-                                            <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"></path>
-                                        </svg>
-                                        <input type="text" v-model="exp.name" placeholder="Ví dụ: Trường THPT Chu Văn An" required>
-                                    </div>
-                                </div>
-                                <div class="form-col">
-                                    <label>Vị trí công việc</label>
-                                    <div class="input-with-icon">
-                                        <svg class="input-icon icon-base" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"></path>
-                                            <path d="M22 10v6"></path>
-                                            <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"></path>
-                                        </svg>
-                                        <input type="text" v-model="exp.position" placeholder="Ví dụ: Giáo viên Toán, Gia sư Tiếng Anh" required>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-col">
-                                <label>Thời gian</label>
-                                <div class="input-with-icon">
-                                    <svg class="input-icon icon-base" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                                    </svg>
-                                    <input type="text" v-model="exp.time" placeholder="VD: 2020-2024" required>
-                                </div>
-                            </div>
-                            <div class="form-col">
-                                <label>Mô tả chi tiết</label>
-                                <div class="input">
-                                    <textarea v-model="exp.description" placeholder="Nhập mô tả" rows="4"></textarea>
-                                </div>
-                            </div>
-                            <button v-if="formData.experiences.length > 1" type="button" class="remove-button" @click="removeExperience(index)">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </template>
+                        <template #unit>
+                            <button type="button" class="toggle-password" @click="showPasswordConfirmation = !showPasswordConfirmation">
+                                <svg v-if="!showPasswordConfirmation" class="icon-base icon-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                <svg v-else class="icon-base icon-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
                                 </svg>
                             </button>
-                        </div>
-                    </div>
-                    <span v-if="formDataErrors.experiences" class="error-message">{{ formDataErrors.experiences }}</span>
+                        </template>
+                    </base-input>
                 </div>
             </div>
 
@@ -571,7 +372,7 @@ onMounted(() => {
                 <div class="education-level">
                     <div class="level-item" v-for="level in educationLevels" :key="level.id" :class="{ 'active': formData.educationLevels === level.id }" @click="addEducationLevel(level)">
                         <div class="icon">
-                            <img :src="level.image" class="icon-base" alt="icon">
+                            <img :src="level.image" class="icon-md" alt="icon">
                         </div>
                         <span>{{ level.name }}</span>
                     </div>
@@ -586,7 +387,7 @@ onMounted(() => {
                 </p>
             </div>
 
-            <button type="submit" class="submit-button" @click="handleRegister" :disabled="isLoading">
+            <button type="submit" class="btn-xl btn-primary" @click="handleRegister" :disabled="isLoading">
                 <span v-if="!isLoading">Đăng ký</span>
                 <span v-else class="loading-spinner"></span>
             </button>
@@ -598,11 +399,11 @@ onMounted(() => {
 
         <div class="social-login">
             <button class="social-button facebook">
-                <img src="/images/facebook.svg" alt="Facebook" class="icon-base">
+                <img src="/images/facebook.svg" alt="Facebook" class="icon-base icon-lg">
                 Facebook
             </button>
             <button class="social-button google">
-                <img src="/images/google.svg" alt="Google" class="icon-base">
+                <img src="/images/google.svg" alt="Google" class="icon-base icon-lg">
                 Google
             </button>
         </div>
@@ -655,8 +456,8 @@ onMounted(() => {
         </div> -->
 
         <div class="modal-footer">
-            <button class="cancel-button" @click="cancelAddSubject">Hủy</button>
-            <button class="btn-base" @click="addSubjectWithExperience" :disabled="!yearsOfExperience">Thêm</button>
+            <button class="btn-md btn-secondary" @click="cancelAddSubject">Hủy</button>
+            <button class="btn-md btn-primary" @click="addSubjectWithExperience" :disabled="!yearsOfExperience">Thêm</button>
         </div>
     </div>
 </base-modal>
@@ -666,7 +467,6 @@ onMounted(() => {
 .main-register {
     background: #fcfcfc;
     padding: 1rem;
-    --icon-base: 18px;
 }
 
 .container-register {
@@ -727,7 +527,7 @@ onMounted(() => {
     gap: 1rem;
 }
 
-.form-group-containner {
+.form-group-container {
     display: flex;
     gap: 1rem;
     width: 100%;
@@ -770,13 +570,6 @@ onMounted(() => {
     color: black;
 }
 
-.input-icon,
-.button-icon {
-    position: absolute;
-    left: 12px;
-    color: #9ca3af;
-}
-
 .form-group input {
     width: 100%;
     padding: 12px 16px;
@@ -784,11 +577,6 @@ onMounted(() => {
     border-radius: 8px;
     font-size: 16px;
     transition: all 0.3s ease;
-}
-
-.form-group .input-with-icon input,
-.form-group .button-with-icon button {
-    padding: 0.8rem 1rem 0.8rem 2.3rem;
 }
 
 .form-group input:focus {
@@ -808,7 +596,7 @@ onMounted(() => {
 
 .education-level {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
     gap: 12px;
     margin-top: 1rem;
 }
@@ -821,7 +609,7 @@ onMounted(() => {
     text-align: center;
     cursor: pointer;
     gap: 0.3rem;
-    border: 1px solid #f3f4f6;
+    border: 1px solid var(--gray-100);
     border-radius: 8px;
     padding: 0.7rem 2rem;
     font-size: var(--font-size-small);
@@ -829,18 +617,18 @@ onMounted(() => {
 }
 
 .level-item.active {
-    background-color: #f3f4f6;
-    border: 1px solid #8a8c91;
+    background-color: var(--gray-100);
+    border: 1px solid var(--gray-200);
     border-radius: 8px;
 }
 
 .level-item:hover {
-    background-color: #f3f4f6;
+    background-color: var(--gray-100);
     border-radius: 8px;
 }
 
 .level-item .icon {
-    background: #e7e7e8;
+    background: var(--gray-100);
     border-radius: 2rem;
     width: 35px;
     height: 35px;
@@ -905,31 +693,6 @@ onMounted(() => {
 
 .checkbox-container .link:hover {
     text-decoration: underline;
-}
-
-.submit-button {
-    width: 100%;
-    padding: 12px;
-    background: black;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.submit-button:hover {
-    background: #1a1a1a;
-}
-
-.submit-button:disabled {
-    background: #d1d5db;
-    cursor: not-allowed;
 }
 
 .loading-spinner {
@@ -1099,13 +862,6 @@ input[type="checkbox"] {
 .input-with-icon input:focus {
     outline: none;
     border-color: #111827;
-}
-
-.input-icon {
-    position: absolute;
-    left: 0.75rem;
-    color: #6b7280;
-    pointer-events: none;
 }
 
 .form-row {
@@ -1278,11 +1034,6 @@ input.has-subjects {
     flex-wrap: wrap;
 }
 
-.icon-base {
-    width: 20px;
-    height: 20px;
-}
-
 .input-with-icon {
     position: relative;
     display: flex;
@@ -1292,12 +1043,6 @@ input.has-subjects {
 .input-with-icon input {
     padding-right: 40px;
     width: 100%;
-}
-
-.input-with-icon .icon-base {
-    position: absolute;
-    right: 12px;
-    color: #6B7280;
 }
 
 .hint-text {
@@ -1345,13 +1090,8 @@ input.has-subjects {
     color: #111827;
 }
 
-.icon-base {
-    width: var(--icon-base);
-    height: var(--icon-base);
-}
-
 /* Keep only the button styles */
-.modal-content {
+    .modal-content {
     display: grid;
     gap: 1rem;
 }
@@ -1364,7 +1104,7 @@ input.has-subjects {
 
 @media (max-width: 640px) {
 
-    .form-group-containner {
+    .form-group-container {
         grid-template-columns: 1fr;
     }
 

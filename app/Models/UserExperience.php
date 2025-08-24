@@ -27,8 +27,8 @@ class UserExperience extends Model
         'user_id',
         'name',
         'position',
-        'start_date',
-        'end_date',
+        'time',
+        'description',
     ];
 
     public function user()

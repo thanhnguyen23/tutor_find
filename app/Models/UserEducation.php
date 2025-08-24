@@ -17,6 +17,7 @@ class UserEducation extends Model
         'major',
         'time',
         'description',
+        'certificate',
     ];
 
     public function user()

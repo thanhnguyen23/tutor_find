@@ -5,19 +5,21 @@
         <HeroSection />
     </section>
 
-    <!-- Search Section -->
-    <section class="search-section">
-        <SearchSection />
-    </section>
+    <div>
+        <!-- Search Section -->
+        <section class="search-section">
+            <SearchSection />
+        </section>
 
-    <!-- Featured Tutors Section -->
-    <section class="tutors-section">
-        <TutorsSection />
-    </section>
+        <!-- Featured Tutors Section -->
+        <section class="tutors-section">
+            <TutorsSection />
+        </section>
+    </div>
 
-    <section class="why-choose-us-section">
+    <!-- <section class="why-choose-us-section">
         <WhyChooseUsSection />
-    </section>
+    </section> -->
 
     <!-- Student Reviews Section -->
     <section class="reviews-section">
@@ -25,7 +27,7 @@
     </section>
 
     <section class="faq-section">
-        <FAQSection />
+        <!-- <FAQSection /> -->
     </section>
 
     <section class="register-section">
@@ -47,11 +49,24 @@ import FAQSection from '../Components/Home/FAQSection.vue';
 import RegisterSection from '../Components/Home/RegisterSection.vue';
 </script>
 
+<style>
+:root {
+    --icon-base-size: 1.2rem;
+}
+</style>
+
 <style scoped>
+section {
+    padding: 2rem 0;
+}
+.home-container {
+    display: grid;
+    gap: 3rem;
+}
 /* Updated Hero Section Styles */
 .hero-section {
-    background: #f3f4f6;
-    margin: auto;
+    width: 100%;
+    background: white;
 }
 .hero-wrapper {
     display: flex;
@@ -179,7 +194,26 @@ import RegisterSection from '../Components/Home/RegisterSection.vue';
     margin: 0 auto;
 }
 
+.register-section {
+    background: #1a1a1a;
+    color: white;
+}
+
 .tutors-section {
+    padding: 0 0 1rem;
+}
+.tutors-section, .search-section {
     margin: 0 auto;
+    background: #fbfbfc;
+}
+
+@media (max-width: 640px) {
+    .home-container {
+        gap: 2rem;
+    }
+
+    section {
+        padding: 1rem 0;
+    }
 }
 </style>

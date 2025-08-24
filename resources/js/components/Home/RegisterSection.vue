@@ -71,15 +71,8 @@ const handleSubmit = () => {
 </script>
 
 <style scoped>
-.register-section {
-    padding: 80px 0;
-    background: #1a1a1a;
-    color: white;
-}
-
 .container {
-    max-width: 1300px;
-    margin: 0 auto;
+    margin: auto;
 }
 
 .register-content {
@@ -232,10 +225,6 @@ const handleSubmit = () => {
 }
 
 @media (max-width: 768px) {
-    .register-section {
-        padding: 64px 0;
-    }
-
     .section-title {
         font-size: 30px;
     }

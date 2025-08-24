@@ -12,43 +12,61 @@
         <div class="search-form">
             <div class="search-row">
                 <div class="form-group">
-                    <label>Môn học</label>
-                    <select class="form-select">
-                        <option>Tất cả môn học</option>
-                    </select>
+                    <base-select
+                        size="medium"
+                        v-model="selectedCity"
+                        :options="cities"
+                        placeholder="Tất cả thành phố"
+                        custom-class="form-control-md"
+                        label="Thành phố"
+                    />
+                </div>
+                <div class="form-group">
+                    <base-select
+                        size="medium"
+                        v-model="selectedSubject"
+                        :options="subjects"
+                        placeholder="Tất cả môn học"
+                        custom-class="form-control-md"
+                        label="Môn học"
+                    />
                 </div>
 
                 <div class="form-group">
-                    <label>Cấp độ</label>
-                    <select class="form-select">
-                        <option>Tất cả cấp độ</option>
-                    </select>
+                    <base-select
+                        size="medium"
+                        v-model="selectedLevel"
+                        :options="levels"
+                        placeholder="Tất cả cấp độ"
+                        custom-class="form-control-md"
+                        label="Cấp độ"
+                    />
                 </div>
 
-                <div class="form-group">
-                    <label>Kinh nghiệm</label>
-                    <select class="form-select">
-                        <option>Tất cả</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
+                <!-- <div class="form-group">
                     <label>Đánh giá</label>
-                    <select class="form-select">
-                        <option>Tất cả đánh giá</option>
-                    </select>
-                </div>
+                    <base-select
+                        size="medium"
+                        v-model="selectedRating"
+                        :options="ratings"
+                        placeholder="Tất cả đánh giá"
+                        custom-class="form-control-md"
+                    />
+                </div> -->
             </div>
 
             <div class="search-filters">
-                <div class="filter-label">Sắp xếp theo:</div>
-                <select class="filter-select">
-                    <option>Đánh giá cao nhất</option>
-                </select>
-                <button class="search-button">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+                <div class="filter-right">
+                    <base-select
+                        size="medium"
+                        v-model="selectedExperience"
+                        :options="experiences"
+                        placeholder="Tất cả kinh nghiệm"
+                        custom-class="form-control-md"
+                        label="Kinh nghiệm"
+                    />
+                </div>
+                <button class="btn-lg btn-primary" @click="handleSearch">
                     Tìm kiếm
                 </button>
             </div>
@@ -58,14 +76,69 @@
 </template>
 
 <script setup>
+import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { useStore } from 'vuex';
+
+const router = useRouter();
+const store = useStore();
+
+const selectedCity = ref(null);
+const selectedSubject = ref(null);
+const selectedLevel = ref(null);
+const selectedExperience = ref(null);
+const selectedRating = ref(null);
+const selectedSort = ref('rating');
+
+const cities = computed(() => {
+    const provinces = store.state.configuration?.provinces || [];
+    return [
+        { id: '', name: 'Tất cả thành phố' },
+        ...provinces.map(p => ({ id: p.id, name: p.name }))
+    ];
+});
+
+const subjects = computed(() => {
+    const subjects = store.state.configuration?.subjects || [];
+    return [
+        { id: '', name: 'Tất cả môn học' },
+        ...subjects.map(s => ({ id: s.id, name: s.name }))
+    ];
+});
+
+const levels = computed(() => {
+    const levels = store.state.configuration?.educationLevels || [];
+    return [
+        { id: '', name: 'Tất cả cấp độ' },
+        ...levels.map(l => ({ id: l.id, name: l.name }))
+    ];
+});
+
+const experiences = [
+    { id: '', name: 'Tất cả' },
+    { id: 'new', name: 'Mới (0-2 năm)' },
+    { id: 'experienced', name: 'Kinh nghiệm (3-5 năm)' },
+    { id: 'expert', name: 'Chuyên gia (5+ năm)' }
+];
+
+
+function handleSearch() {
+    const params = {
+        city: selectedCity.value,
+        subject: selectedSubject.value,
+        level: selectedLevel.value,
+        experience: selectedExperience.value,
+        // Có thể thêm rating, sort nếu muốn
+    };
+    // Xóa các param null/undefined hoặc 'all'
+    Object.keys(params).forEach(key => {
+        if (!params[key]) delete params[key];
+    });
+    router.push({ name: 'search', query: params });
+}
 </script>
 
 <style scoped>
-.search-section {
-    padding-top: 60px;
-    background: #fff;
-}
-
 .search-title-wrapper {
     margin-bottom: 3rem;
     text-align: center;
@@ -73,22 +146,22 @@
 
 .search-badge {
     display: inline-block;
-    padding: 6px 16px;
+    padding: 6px 1rem;
     background: #f3f4f6;
     border-radius: 2rem;
     font-size: 14px;
     font-weight: 500;
-    margin-bottom: 16px;
+    margin-bottom: 1rem;
 }
 
 .search-title {
-    font-size: 36px;
+    font-size: var(--font-size-heading-3);
     font-weight: 700;
     margin-bottom: 12px;
 }
 
 .search-description {
-    font-size: 16px;
+    font-size: 1rem;
     color: #6b7280;
     margin-bottom: 32px;
     max-width: 700px;
@@ -96,19 +169,19 @@
 }
 
 .search-form {
-    max-width: 66rem;
+    max-width: 60rem;
     margin: auto;
     background: white;
-    border-radius: 12px;
-    padding: 24px;
+    border-radius: 2rem 1rem 2rem 1rem;
+    padding: 1.8rem;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .search-row {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 20px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
 }
 
 .form-group {
@@ -123,34 +196,19 @@
     color: #374151;
 }
 
-.form-select {
-    width: 100%;
-    padding: 11px;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    font-size: 14px;
-    color: #374151;
-    background: white;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.form-select:hover {
-    border-color: #d1d5db;
-}
-
-.form-select:focus {
-    outline: none;
-    border-color: #2563eb;
-    ring: 2px solid rgba(37, 99, 235, 0.2);
-}
-
 .search-filters {
     display: flex;
-    align-items: center;
-    gap: 16px;
-    padding-top: 16px;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 1rem;
     border-top: 1px solid #e5e7eb;
+}
+
+.filter-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .filter-label {
@@ -158,36 +216,17 @@
     color: #6b7280;
 }
 
-.filter-select {
-    padding: 8px 12px;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    font-size: 14px;
-    color: #374151;
-    background: white;
-    cursor: pointer;
-    min-width: 180px;
-}
-
-.search-button {
-    margin-left: auto;
+.btn-md {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     padding: 10px 20px;
-    background: #000;
-    color: white;
     border-radius: 8px;
     font-weight: 500;
     transition: all 0.3s;
 }
 
-.search-button:hover {
-    background: #1a1a1a;
-    transform: translateY(-1px);
-}
-
-.search-button svg {
+.btn-md svg {
     width: 20px;
     height: 20px;
 }
@@ -199,10 +238,6 @@
 }
 
 @media (max-width: 768px) {
-    .search-section {
-        padding: 48px 0;
-    }
-
     .search-title {
         font-size: 30px;
     }
@@ -211,10 +246,10 @@
         flex-wrap: wrap;
     }
 
-    .search-button {
+    .btn-md {
         width: 100%;
         justify-content: center;
-        margin-top: 16px;
+        margin-top: 1rem;
     }
 }
 
@@ -224,11 +259,11 @@
     }
 
     .container {
-        padding: 0 16px;
+        padding: 0 1rem;
     }
 
     .search-form {
-        padding: 16px;
+        padding: 1rem;
     }
 }
 </style>

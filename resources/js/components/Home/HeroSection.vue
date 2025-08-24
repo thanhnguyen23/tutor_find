@@ -14,15 +14,15 @@
                     Kết nối với những gia sư xuất sắc nhất để nâng cao kiến thức và đạt được mục tiêu học tập của bạn.
                 </p>
                 <div class="hero-buttons">
-                    <router-link to="/tutors" class="btn btn-primary">
+                    <button class="btn-xl btn-primary">
                         Tìm gia sư ngay
-                        <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="icon-md" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                         </svg>
-                    </router-link>
-                    <router-link to="/about" class="btn btn-secondary">
+                    </button>
+                    <button class="btn-xl btn-secondary">
                         Tìm hiểu thêm
-                    </router-link>
+                    </button>
                 </div>
 
                 <!-- Stats -->
@@ -45,9 +45,7 @@
             <!-- Right Content -->
             <div class="hero-right">
                 <div class="hero-image">
-                    <svg class="placeholder-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
+                    <!-- <img src="/images/banner.webp" alt=""> -->
 
                     <!-- Floating Card - Online Tutors -->
                     <div class="floating-card tutor-card">
@@ -72,12 +70,12 @@
                         <div class="result-info">
                             <div class="result-title">
                                 <div class="icon">
-                                    <img src="/images/educationLevel/elementary.svg" alt="">
+                                    <img class="icon-md" src="/images/educationLevel/elementary.svg" alt="">
                                 </div>
                                 <span>Kết quả thực tế</span>
                             </div>
                             <div class="result-stats">
-                                <div>Điểm số tăng 25%</div>
+                                <div>Điểm số tăng</div>
                                 <div>Tự tin học tập hơn</div>
                             </div>
                         </div>
@@ -93,15 +91,9 @@
 </script>
 
 <style scoped>
-.hero {
-    width: 100%;
-    background: white;
-    padding: 64px 0;
-}
-
 .hero-content {
     display: flex;
-    gap: 64px;
+    gap: 5rem;
     align-items: flex-start;
 }
 
@@ -126,6 +118,7 @@
     line-height: 1.1;
     letter-spacing: -0.02em;
     margin-bottom: 16px;
+    color: var(--color-primary);
 }
 
 .hero-description {
@@ -139,41 +132,6 @@
     display: flex;
     gap: 16px;
     margin-bottom: 48px;
-}
-
-.btn {
-    display: inline-flex;
-    align-items: center;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
-
-.btn-primary {
-    background: #000;
-    color: white;
-}
-
-.btn-primary:hover {
-    background: #1a1a1a;
-    transform: translateY(-2px);
-}
-
-.btn-secondary {
-    background: white;
-    color: #374151;
-    border: 1px solid #e5e7eb;
-}
-
-.btn-secondary:hover {
-    background: #f9fafb;
-}
-
-.btn-icon {
-    width: 20px;
-    height: 20px;
-    margin-left: 8px;
 }
 
 /* Stats Styles */
@@ -213,6 +171,9 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    background-image: url('/images/banner.webp');
+    background-size: cover;
+    background-position: center;
 }
 
 .placeholder-icon {
@@ -312,11 +273,6 @@
     justify-content: center;
 }
 
-.result-title .icon img {
-    width: 20px;
-    height: 20px;
-}
-
 .result-stats {
     color: #6b7280;
 }
@@ -362,31 +318,30 @@
 }
 
 @media (max-width: 768px) {
-    .hero {
-        padding: 48px 0;
-    }
-
     .hero-title {
         font-size: 36px;
     }
 
     .hero-buttons {
         flex-direction: column;
-    }
-
-    .btn {
-        width: 100%;
-        justify-content: center;
+        margin: 0;
     }
 
     .hero-stats {
         grid-template-columns: repeat(2, 1fr);
         gap: 24px;
     }
+
+    .hero-stats {
+        display: none;
+    }
+
+    .hero-content {
+        gap: 3rem;
+    }
 }
 
 @media (max-width: 640px) {
-
     .hero-stats {
         grid-template-columns: 1fr;
         text-align: center;

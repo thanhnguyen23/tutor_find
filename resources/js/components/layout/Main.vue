@@ -4,6 +4,7 @@ import Header from "./Header.vue";
 import { useRoute } from "vue-router";
 import { getCurrentInstance, onMounted } from "vue";
 import { useStore } from "vuex";
+import Notification from "../Notification.vue";
 
 const store = useStore();
 const route = useRoute();
@@ -29,6 +30,8 @@ onMounted(() => {
 <template>
 <div>
     <layout class="layout-main" v-if="!route.meta.noLayout">
+        <Notification />
+
         <Header />
 
         <main>

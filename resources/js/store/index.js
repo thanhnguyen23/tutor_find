@@ -5,6 +5,12 @@ const store = createStore({
         configuration: JSON.parse(localStorage.getItem('configuration')) || {},
         userData: JSON.parse(sessionStorage.getItem('user')) || {},
         token: sessionStorage.getItem('token') || '',
+        showNotification: {
+            show: false,
+            message: '',
+            type: 'error',
+        },
+        hiddenFooter: false,
     },
     mutations: {
         setConfiguration(state, payload) {
@@ -26,6 +32,12 @@ const store = createStore({
             sessionStorage.setItem('token', payload.token);
             sessionStorage.setItem('user', JSON.stringify(payload.user));
         },
+        setShowNotification(state, payload) {
+            state.showNotification = payload;
+        },
+        setHiddenFooter(state, payload) {
+            state.hiddenFooter = payload;
+        },
     },
     actions: {
         updateConfiguration({ commit }, payload) {
@@ -45,12 +57,20 @@ const store = createStore({
             commit('setUserData', {});
             sessionStorage.clear();
         },
+        updateShowNotification({ commit }, payload) {
+            commit('setShowNotification', payload);
+        },
+        updateHiddenFooter({ commit }, payload) {
+            commit('setHiddenFooter', payload);
+        },
     },
     getters: {
         configuration: (state) => state.configuration,
         userData: (state) => state.userData,
         token: (state) => state.token,
         isAuthenticated: (state) => !!state.token && Object.keys(state.userData).length > 0,
+        showNotification(state) {return state.showNotification;},
+        hiddenFooter(state) {return state.hiddenFooter;},
     },
 });
 

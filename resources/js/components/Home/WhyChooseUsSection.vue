@@ -72,12 +72,12 @@
 <style scoped>
 .why-choose-section {
     text-align: center;
-    padding: 60px 0;
+    padding: 4rem 0;
     background: white;
 }
 
 .container {
-    margin: 0 auto;
+    margin: auto;
 }
 
 .section-badge {

@@ -25,11 +25,27 @@ class UserExperienceRepository implements UserExperienceRepositoryInterface
         return $this->model->create($data);
     }
 
+    public function delete(int $id)
+    {
+        $userExperience = $this->model->find($id);
+        $userExperience->delete();
+        return $userExperience;
+    }
+
+
     public function update(array $data, $id)
     {
         $userExperience = $this->model->find($id);
+        if (!$userExperience) {
+            return null;
+        }
         $userExperience->update($data);
         return $userExperience;
+    }
+
+    public function find(int $id)
+    {
+        return $this->model->find($id);
     }
 
     public function findByUserId(int $userId)

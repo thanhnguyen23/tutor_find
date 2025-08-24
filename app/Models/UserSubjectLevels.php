@@ -12,6 +12,7 @@ class UserSubjectLevels extends Model
     protected $fillable = [
         'user_subject_id',
         'education_level_id',
+        'price'
     ];
 
     public function user()
@@ -22,5 +23,10 @@ class UserSubjectLevels extends Model
     public function user_subject()
     {
         return $this->belongsTo(UserSubject::class);
+    }
+
+    public function education_level()
+    {
+        return $this->belongsTo(EducationLevel::class);
     }
 }

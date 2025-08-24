@@ -28,6 +28,9 @@ class UserEducationLevelRepository implements UserEducationLevelRepositoryInterf
     public function update(array $data, $id)
     {
         $userEducationLevel = $this->model->find($id);
+        if (!$userEducationLevel) {
+            return null;
+        }
         $userEducationLevel->update($data);
         return $userEducationLevel;
     }

@@ -87,10 +87,6 @@
 </script>
 
 <style scoped>
-.reviews-section {
-    padding: 60px 0;
-}
-
 .section-badge {
     margin: auto;
     width: 100%;
@@ -204,10 +200,6 @@
 }
 
 @media (max-width: 768px) {
-    .reviews-section {
-        padding: 64px 0;
-    }
-
     .section-title {
         font-size: 30px;
     }

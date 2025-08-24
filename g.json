@@ -1,14 +1,8 @@
-thông tin gia sư
-1. AboutYou (về bản thân)
-2. student_number (số học sinh đã dạy)
-3. lesson_number (số tiết đã dạy)
-4. price (giá dạy)
-5. schedule (lịch học)
-6. Available Time Slots (thời gian dạy)
-7. Weekly Availability (thời gian dạy hàng tuần)
-8. subject (môn học) (1 user - nhiều subject)
-9. study location (nơi học tập) (1 user - nhiều study location)
-10. education (trình độ học vấn) (1 user - nhiều education)
-11. experience (kinh nghiệm) (1 user - nhiều experience)
-12. Achievements (thành tích) (1 user - nhiều Achievements)
-
+1. sửa lại Mức độ hoàn thiện hồ sơ
+-> Thông tin cá nhân (Họ, tên, giới tính, số điện thoại, Email, Tỉnh/Thành phố, Quận/Huyện, Phường/Xã, Địa chỉ chi tiết, Giới thiệu bản thân, Số CCCD (bao gồm cả 2 ảnh), Video Giới Thiệu)
+-> học vấn ít nhất 1
+-> Kinh nghiệm ít nhất 1
+-> Môn học giảng dạy ít nhất 1
+-> Ngôn ngữ ít nhất 1
+-> Lịch trình hàng tuần
+-> Hình thức học

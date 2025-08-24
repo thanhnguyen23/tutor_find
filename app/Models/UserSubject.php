@@ -25,4 +25,9 @@ class UserSubject extends Model
     {
         return $this->belongsTo(Subject::class);
     }
+
+    public function userSubjectLevels()
+    {
+        return $this->hasMany(UserSubjectLevels::class);
+    }
 }

@@ -37,7 +37,9 @@ const handleResponse = (response) => {
 const handleError = (error) => {
     if (error?.data) {
         throw error.data;
-    }  else {
+    } else if (error?.response?.data) {
+        throw error.response.data;
+    } else {
         throw error;
     }
 }
@@ -70,6 +72,14 @@ const api = {
         }
     },
 
+    async apiDelete(url) {
+        try {
+            const response = await axiosInstance.delete('/api/' + url);
+            return handleResponse(response);
+        } catch (e) {
+            return handleError(e);
+        }
+    },
 
     async get(url, params) {
         try {
@@ -89,9 +99,22 @@ const api = {
         }
     },
 
-    async apiUploadPhoto(url, params) {
+    async apiPostFormData(url, params) {
         try {
             const response = await axiosInstance.post('/api/' + url, params, {
+                headers: {
+                    'Content-Type':'multipart/form-data',
+                },
+            });
+            return handleResponse(response);
+        } catch (e) {
+            return handleError(e);
+        }
+    },
+
+    async apiPutFormData(url, params) {
+        try {
+            const response = await axiosInstance.put('/api/' + url, params, {
                 headers: {
                     'Content-Type':'multipart/form-data',
                 },

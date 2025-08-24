@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UserWeeklyTimeSlot extends Model
 {
@@ -11,23 +12,39 @@ class UserWeeklyTimeSlot extends Model
 
     protected $fillable = [
         'user_id',
-        'day_of_week',
-        'start_time',
-        'end_time',
+        'day_of_week_id',
+        'time_slot_id_start',
+        'time_slot_id_end',
+        'is_available',
+        'teaching_mode'
     ];
 
     protected $casts = [
-        'start_time' => 'datetime:H:i:s',
-        'end_time' => 'datetime:H:i:s',
+        'is_available' => 'boolean',
+        'time_slot_id_start' => 'integer',
+        'time_slot_id_end' => 'integer'
     ];
 
-    public function user()
+    /**
+     * Get the user that owns the time slot.
+     */
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function getDayOfWeekAttribute($value)
+    public function dayOfWeek(): BelongsTo
     {
-        return ucfirst($value);
+        return $this->belongsTo(DayOfWeek::class);
+    }
+
+    public function timeSlotStart(): BelongsTo
+    {
+        return $this->belongsTo(TimeSlot::class, 'time_slot_id_start');
+    }
+
+    public function timeSlotEnd(): BelongsTo
+    {
+        return $this->belongsTo(TimeSlot::class, 'time_slot_id_end');
     }
 }
