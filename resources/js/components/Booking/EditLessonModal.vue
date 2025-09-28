@@ -1,5 +1,5 @@
 <template>
-<BaseModal :isOpen="isOpen" title="Chỉnh sửa thông tin buổi học" @close="emit('close')" size="large">
+<base-modal :isOpen="isOpen" title="Chỉnh sửa thông tin buổi học" @close="emit('close')" size="large">
     <form @submit.prevent="handleSave">
         <div class="edit-grid">
             <div class="form-group">
@@ -36,7 +36,7 @@
             <button type="submit" class="btn-md btn-primary">Lưu thay đổi</button>
         </div>
     </form>
-</BaseModal>
+</base-modal>
 </template>
 
 <script setup>
@@ -45,7 +45,6 @@ import {
     computed,
     watch
 } from 'vue'
-import BaseModal from '@/components/BaseModal.vue'
 const props = defineProps({
     isOpen: Boolean,
     bookingData: Object,

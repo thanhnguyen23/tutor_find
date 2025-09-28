@@ -16,6 +16,7 @@ const activeTab = ref('overview');
 const store = useStore();
 const showSendMessageModal = ref(false);
 const selectedUser = ref(null);
+const isLoading = ref(false);
 const myUid = computed(() => store.state.auth?.user?.uid || localStorage.getItem('uid'));
 
 const tabs = [
@@ -32,12 +33,15 @@ const getTwoNameSubject = computed(() => {
 });
 
 const fetchUser = async () => {
+    isLoading.value = true;
     try {
         const userUid = route.params.uid;
         const response = await proxy.$api.apiGet(`tutor/${userUid}`);
         user.value = response;
     } catch (error) {
         console.log('Error fetching user data', error);
+    } finally {
+        isLoading.value = false;
     }
 };
 
@@ -70,7 +74,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-<div class="user-detail-header_mobile" v-if="Object.keys(user).length > 0">
+<!-- Loading overlay -->
+<base-loading v-if="isLoading" />
+
+<div class="user-detail-header_mobile" v-if="Object.keys(user).length > 0 && !isLoading">
     <div class="container">
         <div class="avatar-wrapper_mobile">
             <img :src="user.avatar || '/images/default-avatar.png'" />
@@ -256,7 +263,6 @@ onUnmounted(() => {
                 <OverviewTab v-if="activeTab === 'overview'" :user="user" />
                 <ExperienceTab v-if="activeTab === 'experience'" :user="user" />
                 <ReviewsTab v-if="activeTab === 'reviews'" :user="user" />
-                <ScheduleTab v-if="activeTab === 'schedule'" :user="user" />
                 <PricingTab v-if="activeTab === 'pricing'" :user="user" />
             </div>
         </div>

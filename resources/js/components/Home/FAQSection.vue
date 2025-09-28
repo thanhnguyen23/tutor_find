@@ -61,7 +61,6 @@ const faqs = [
 
 <style scoped>
 .faq-section {
-    padding: 0 0 4rem 0;
     background: white;
 }
 

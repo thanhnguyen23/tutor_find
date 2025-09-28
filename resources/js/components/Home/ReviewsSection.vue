@@ -24,7 +24,7 @@
                 </p>
                 <div class="reviewer-info">
                     <div class="reviewer-avatar">
-                        <img src="/images/avatar-placeholder.jpg" alt="Nguyễn Thị B">
+                        <img src="https://c.superprof.com/i/m/14886314/600/20220817132835/14886314.webp" alt="Nguyễn Thị B">
                     </div>
                     <div class="reviewer-details">
                         <h4 class="reviewer-name">Nguyễn Thị B</h4>
@@ -47,7 +47,7 @@
                 </p>
                 <div class="reviewer-info">
                     <div class="reviewer-avatar">
-                        <img src="/images/avatar-placeholder.jpg" alt="Trần Văn D">
+                        <img src="https://c.superprof.com/i/m/14886314/600/20220817132835/14886314.webp" alt="Trần Văn D">
                     </div>
                     <div class="reviewer-details">
                         <h4 class="reviewer-name">Trần Văn D</h4>
@@ -70,7 +70,7 @@
                 </p>
                 <div class="reviewer-info">
                     <div class="reviewer-avatar">
-                        <img src="/images/avatar-placeholder.jpg" alt="Lê Minh E">
+                        <img src="https://c.superprof.com/i/m/14886314/600/20220817132835/14886314.webp" alt="Lê Minh E">
                     </div>
                     <div class="reviewer-details">
                         <h4 class="reviewer-name">Lê Minh E</h4>

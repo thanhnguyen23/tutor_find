@@ -68,14 +68,14 @@ class UserRepository implements UserRepositoryInterface
             'userExperiences',
             'userSubjects.subject',
             'userSubjects.userSubjectLevels.education_level',
-            'userWeeklyTimeSlots.timeSlotStart',
-            'userWeeklyTimeSlots.timeSlotEnd',
+            'userWeeklyTimeSlots.timeSlot',
             'userPackages.subject',
             'userPackages.level',
             'userPackages.features',
             'userLanguages.language',
             'userLanguages.level_language',
-            'userStudyLocations'
+            'userStudyLocations',
+            'tutorSession'
         ])->first();
     }
 
@@ -94,7 +94,7 @@ class UserRepository implements UserRepositoryInterface
             ->paginate($per_page);
     }
 
-    public function getTutorDetailByUid($uid)
+    public function getUserDetailByUid($uid)
     {
         return $this->model
             ->where('uid', $uid)
@@ -184,14 +184,6 @@ class UserRepository implements UserRepositoryInterface
             }
         }
 
-        // Filter by time slot
-        if (!empty($filters['time_slot_id'])) {
-            $query->whereHas('userWeeklyTimeSlots', function ($q) use ($filters) {
-                $q->where('time_slot_id_start', '<=', $filters['time_slot_id'])
-                  ->where('time_slot_id_end', '>=', $filters['time_slot_id']);
-            });
-        }
-
         // Filter by province
         if (!empty($filters['provinces_id'])) {
             $query->where('provinces_id', $filters['provinces_id']);
@@ -199,18 +191,6 @@ class UserRepository implements UserRepositoryInterface
         // Filter by sex
         if (!empty($filters['sex'])) {
             $query->where('sex', $filters['sex']);
-        }
-        // Filter by time slot start
-        if (!empty($filters['time_slot_start'])) {
-            $query->whereHas('userWeeklyTimeSlots', function ($q) use ($filters) {
-                $q->where('time_slot_id_start', '<=', $filters['time_slot_start']);
-            });
-        }
-        // Filter by time slot end
-        if (!empty($filters['time_slot_end'])) {
-            $query->whereHas('userWeeklyTimeSlots', function ($q) use ($filters) {
-                $q->where('time_slot_id_end', '>=', $filters['time_slot_end']);
-            });
         }
 
         // Sort results

@@ -23,6 +23,7 @@ class NotificationLogRepository implements NotificationLogRepositoryInterface
         return $this->model
         ->where('uid', $uid)
         ->with(['notificationTypes', 'user'])
+        ->orderBy('id', 'desc')
         ->paginate($per_page);
     }
 
@@ -32,6 +33,7 @@ class NotificationLogRepository implements NotificationLogRepositoryInterface
         ->where('uid', $uid)
         ->where('is_read', $is_read)
         ->with(['notificationTypes', 'user'])
+        ->orderBy('id', 'desc')
         ->paginate($per_page);
     }
 

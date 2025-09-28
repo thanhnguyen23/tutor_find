@@ -24,8 +24,6 @@ class User extends Authenticatable
         'uid',
         'role',
         'cccd',
-        'cccd_front',
-        'cccd_back',
         'sex',
         'first_name',
         'last_name',
@@ -37,19 +35,16 @@ class User extends Authenticatable
         'provinces_id',
         'wards_id',
         'about_you',
-        'title_ads',
-        'student_number',
-        'lesson_number',
         'education_level_id',
         'reminder_emails_sent',
         'last_reminder_sent_at',
         'profile_completed',
-        'price',
         'avatar',
         'is_active',
         'referral_link',
+        'free_study',
         'is_free_study',
-        'free_study_time',
+        'tutor_session_id',
         'last_activity',
     ];
 
@@ -63,7 +58,6 @@ class User extends Authenticatable
 
     protected $casts = [
         'is_free_study' => 'boolean',
-        'free_study_time' => 'integer',
     ];
 
     public function roleName()
@@ -118,7 +112,7 @@ class User extends Authenticatable
 
     public function userLanguages()
     {
-        return $this->hasMany(UserLanguage::class);
+        return $this->hasMany(UserLanguage::class, 'uid', 'uid');
     }
 
     public function userStudyLocations()
@@ -144,5 +138,34 @@ class User extends Authenticatable
     public function wards()
     {
         return $this->hasOne(Ward::class, 'id', 'wards_id');
+    }
+
+    public function bookings()
+    {
+        return $this->hasMany(UserBooking::class, 'uid', 'uid');
+    }
+
+    public function hasFreeTrial(): bool
+    {
+        return (bool) $this->is_free_study;
+    }
+
+    public function hasFreeTrialLeft(): bool
+    {
+        // Nếu gia sư không bật trial thì coi như không có
+        if ($this->is_free_study != 1) {
+            return false;
+        }
+
+        // Nếu user đã từng có booking trial free thì không còn nữa
+        return !$this->bookings()
+            ->where('type', 'trial')
+            ->where('is_free', 1)
+            ->exists();
+    }
+
+    public function tutorSession()
+    {
+        return $this->belongsTo(TutorSession::class, 'tutor_session_id');
     }
 }

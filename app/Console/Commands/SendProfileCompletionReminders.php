@@ -35,8 +35,6 @@ class SendProfileCompletionReminders extends Command
             })
             ->get();
 
-        Log::info($tutors);
-
         $count = 0;
         foreach ($tutors as $tutor) {
             if ($this->userService->needsProfileCompletionReminder($tutor)) {

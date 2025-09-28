@@ -1,5 +1,8 @@
 <template>
-<div class="home-container">
+<!-- Loading overlay -->
+<base-loading v-if="isLoading" />
+
+<div class="home-container" v-if="!isLoading">
     <!-- Hero Section -->
     <section class="hero-section">
         <HeroSection />
@@ -26,10 +29,6 @@
         <ReviewsSection />
     </section>
 
-    <section class="faq-section">
-        <!-- <FAQSection /> -->
-    </section>
-
     <section class="register-section">
         <RegisterSection />
     </section>
@@ -38,15 +37,24 @@
 
 <script setup>
 import {
-    ref
+    ref,
+    onMounted
 } from 'vue'
 import HeroSection from '../Components/Home/HeroSection.vue';
-import TutorsSection from '../Components/Home/TutorsSection.vue';
-import SearchSection from '../Components/Home/SearchSection.vue';
+import TutorsSection from '../components/Home/TutorsSection.vue';
+import SearchSection from '../components/Home/SearchSection.vue';
 import WhyChooseUsSection from '../Components/Home/WhyChooseUsSection.vue';
 import ReviewsSection from '../Components/Home/ReviewsSection.vue';
-import FAQSection from '../Components/Home/FAQSection.vue';
 import RegisterSection from '../Components/Home/RegisterSection.vue';
+
+const isLoading = ref(true);
+
+onMounted(() => {
+    // Simulate loading time for home page
+    setTimeout(() => {
+        isLoading.value = false;
+    }, 1000);
+});
 </script>
 
 <style>

@@ -173,9 +173,7 @@ const calculateProfileCompletion = (userData) => {
         !empty(userData.wards_id) &&
         !empty(userData.address) &&
         !empty(userData.about_you) &&
-        !empty(userData.cccd) &&
-        !empty(userData.cccd_front) &&
-        !empty(userData.cccd_back);
+        !empty(userData.cccd);
 
     // Check education records (Học vấn ít nhất 1)
     completionDetails.education = userData.user_educations?.length > 0;

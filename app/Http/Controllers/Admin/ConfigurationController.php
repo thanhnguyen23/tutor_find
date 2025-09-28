@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\EducationLevelResource;
 use App\Http\Resources\PackagesResource;
 use App\Http\Resources\SubjectsResource;
+use App\Http\Resources\TimeSlotResource;
+use App\Models\UserBookingComplaint;
+use App\Repositories\Contracts\ComplaintTypeRepositoryInterface;
 use App\Repositories\Contracts\DayOfWeekRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -19,8 +22,10 @@ use App\Repositories\Contracts\PaymentMethodRepositoryInterface;
 use App\Repositories\Contracts\StudyLocationRepositoryInterface;
 use App\Repositories\Contracts\SubjectRepositoryInterface;
 use App\Repositories\Contracts\TimeSlotRepositoryInterface;
+use App\Repositories\Contracts\TutorSessionRepositoryInterface;
 use App\Repositories\Contracts\UserWeeklyTimeSlotRepositoryInterface;
 use App\Repositories\Eloquent\OnlineLearningPlatformRepository;
+use Illuminate\Support\Facades\Cache;
 
 class ConfigurationController extends Controller
 {
@@ -36,6 +41,8 @@ class ConfigurationController extends Controller
     protected $OnlineLearningPlatformRepository;
     protected $paymentMethodRepositoryInterface;
     protected $notificationTypeRepositoryInterface;
+    protected $complaintTypeRepositoryInterface;
+    protected $tutorSessionRepositoryInterface;
 
     public function __construct(
     EducationLevelRepositoryInterface $educationLevelRepository,
@@ -49,7 +56,9 @@ class ConfigurationController extends Controller
     StudyLocationRepositoryInterface $studyLocationRepository,
     OnlineLearningPlatformRepository $OnlineLearningPlatformRepository,
     PaymentMethodRepositoryInterface $paymentMethodRepositoryInterface,
-    NotificationTypeRepositoryInterface $notificationTypeRepositoryInterface)
+    NotificationTypeRepositoryInterface $notificationTypeRepositoryInterface,
+    ComplaintTypeRepositoryInterface $complaintTypeRepositoryInterface,
+    TutorSessionRepositoryInterface $tutorSessionRepositoryInterface)
     {
         $this->educationLevelRepository = $educationLevelRepository;
         $this->subjectRepository = $subjectRepository;
@@ -63,22 +72,73 @@ class ConfigurationController extends Controller
         $this->OnlineLearningPlatformRepository = $OnlineLearningPlatformRepository;
         $this->paymentMethodRepositoryInterface = $paymentMethodRepositoryInterface;
         $this->notificationTypeRepositoryInterface = $notificationTypeRepositoryInterface;
+        $this->complaintTypeRepositoryInterface = $complaintTypeRepositoryInterface;
+        $this->tutorSessionRepositoryInterface = $tutorSessionRepositoryInterface;
     }
 
-    public function getAllConfigurations() {
+    public function getAllConfigurations()
+    {
         try {
-            $educationLevels = $this->educationLevelRepository->getAll();
-            $subjects = $this->subjectRepository->getAll();
-            $locations = $this->locationRepository->getAll();
-            $packages = $this->packageRepository->getAll();
-            $levelLanguages = $this->levelLanguageRepository->getAll();
-            $languages = $this->languageRepository->getAll();
-            $dayOfWeeks = $this->dayOfWeekRepository->getAll();
-            $timeSlots = $this->timeSlotRepository->getAll();
-            $studyLocation = $this->studyLocationRepository->getAll();
-            $onlineLearningPlatform = $this->OnlineLearningPlatformRepository->getAll();
-            $paymentMethods = $this->paymentMethodRepositoryInterface->getAll();
-            $notificationType = $this->notificationTypeRepositoryInterface->getAll();
+            Cache::clear();
+            $educationLevels = Cache::remember('config:educationLevels', 86400, function () {
+                return $this->educationLevelRepository->getAll();
+            });
+
+            $subjects = Cache::remember('config:subjects', 86400, function () {
+                return $this->subjectRepository->getAll();
+            });
+
+            $locations = Cache::remember('config:locations', 86400, function () {
+                return $this->locationRepository->getAll();
+            });
+
+            $packages = Cache::remember('config:packages', 86400, function () {
+                return $this->packageRepository->getAll();
+            });
+
+            $levelLanguages = Cache::remember('config:levelLanguages', 86400, function () {
+                return $this->levelLanguageRepository->getAll();
+            });
+
+            $languages = Cache::remember('config:languages', 86400, function () {
+                return $this->languageRepository->getAll();
+            });
+
+            $dayOfWeeks = Cache::remember('config:dayOfWeeks', 86400, function () {
+                return $this->dayOfWeekRepository->getAll();
+            });
+
+            $timeSlots = Cache::remember('config:timeSlots', 86400, function () {
+                return $this->timeSlotRepository->getAll();
+            });
+
+            $studyLocation = Cache::remember('config:studyLocation', 86400, function () {
+                return $this->studyLocationRepository->getAll();
+            });
+
+            $onlineLearningPlatform = Cache::remember('config:onlineLearningPlatform', 86400, function () {
+                return $this->OnlineLearningPlatformRepository->getAll();
+            });
+
+            $paymentMethods = Cache::remember('config:paymentMethods', 86400, function () {
+                return $this->paymentMethodRepositoryInterface->getAll();
+            });
+
+            $notificationType = Cache::remember('config:notificationType', 86400, function () {
+                return $this->notificationTypeRepositoryInterface->getAll();
+            });
+
+            $complaintTypes = Cache::remember('config:complaintTypes', 86400, function () {
+                return $this->complaintTypeRepositoryInterface->getAll();
+            });
+
+            $listStatusComplaint = Cache::remember('config:listStatusComplaint', 86400, function () {
+                return UserBookingComplaint::$LIST_STATUS;
+            });
+
+            $tutorSessions = Cache::remember('config:tutorSessions', 86400, function () {
+                return $this->tutorSessionRepositoryInterface->getAll();
+            });
 
             return response()->json([
                 'educationLevels' => EducationLevelResource::collection($educationLevels),
@@ -90,11 +150,14 @@ class ConfigurationController extends Controller
                 'levelLanguages' => $levelLanguages,
                 'languages' => $languages,
                 'dayOfWeeks' => $dayOfWeeks,
-                'timeSlots' => $timeSlots,
+                'timeSlots' => TimeSlotResource::collection($timeSlots),
                 'studyLocations' => $studyLocation,
                 'onlineLearningPlatform' => $onlineLearningPlatform,
                 'paymentMethods' => $paymentMethods,
                 'notificationType' => $notificationType,
+                'complaintTypes' => $complaintTypes,
+                'listStatusComplaint' => $listStatusComplaint,
+                'tutorSessions' => $tutorSessions,
             ]);
         } catch (\Exception $e) {
             Log::error(__METHOD__, [

@@ -17,4 +17,9 @@ class UserStudyLocation extends Model
     {
         return $this->hasMany(StudyLocation::class, 'id', 'study_location_id');
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'uid', 'uid');
+    }
 }

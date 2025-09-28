@@ -1,5 +1,8 @@
 <template>
-<div class="section-card schedule-section">
+<!-- Loading overlay -->
+<base-loading v-if="isLoading" />
+
+<div class="section-card schedule-section" v-if="!isLoading">
     <div class="header-wrapper">
         <div class="header-left">
             <div class="icon-wrapper">
@@ -50,7 +53,6 @@
                                 <div class="content-card free-time">
                                     <div class="content-detail">
                                         <span>{{ getSlotTimeRange(day, slot) }}</span>
-                                        <span class="text-mini text-gray-500">Khung giờ trống</span>
                                     </div>
                                     <div class="slot-actions">
                                         <button @click.stop="handleEditTimeSlot(getTimeSlotId(day, slot))">
@@ -75,6 +77,41 @@
                 </div>
             </div>
         </div>
+
+        <!-- Mobile layout: day tabs + single-day slots -->
+        <div class="schedule-mobile">
+            <div class="mobile-day-tabs">
+                <button
+                    v-for="day in weekDayOptions"
+                    :key="'m-' + day.id"
+                    class="day-tab"
+                    :class="{ active: day.id === selectedMobileDayId }"
+                    @click="selectedMobileDayId = day.id"
+                >
+                    {{ day.name }}
+                </button>
+            </div>
+            <div class="mobile-time-list">
+                <div class="mobile-time-row" v-for="slot in timeSlotOptions" :key="'m-time-' + slot.id">
+                    <div class="mobile-time-label">{{ slot.name }}</div>
+                    <div class="mobile-time-actions">
+                        <template v-if="selectedDayObj && hasTimeSlot(selectedDayObj, slot)">
+                            <div @click="handleEditTimeSlot(getTimeSlotId(selectedDayObj, slot))">
+                                <svg class="icon-sm" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"></path></svg>
+                            </div>
+                            <div @click="handleDeleteTimeSlot(getTimeSlotId(selectedDayObj, slot))">
+                                <svg class="icon-sm" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg>
+                            </div>
+                        </template>
+                        <template v-else>
+                            <div @click="onAddSlot(selectedDayObj, slot)">
+                                <svg class="icon-sm" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <!-- Modal thêm khung giờ -->
     <base-modal
@@ -92,29 +129,37 @@
                 required="true"
             />
 
-            <div class="form-group-container">
-                <base-select
-                    v-model="newTimeSlot.time_slot_id_start"
-                    label="Thời gian bắt đầu"
-                    :options="validStartTimes"
-                    placeholder="Chọn giờ bắt đầu"
-                    widthFull="true"
-                    required="true"
-                />
-                <base-select
-                    v-model="newTimeSlot.time_slot_id_end"
-                    :options="validEndTimes"
-                    label="Thời gian kết thúc"
-                    placeholder="Chọn giờ kết thúc"
-                    widthFull="true"
-                    required="true"
-                />
+            <div class="form-group-container d-grid">
+                <div class="time-multi-controls">
+                    <base-input
+                        v-model="timeFilter"
+                        type="text"
+                        class="search-input"
+                        placeholder="Lọc khung giờ..."
+                    />
+                    <div class="actions">
+                        <button type="button" class="btn-lg btn-secondary" @click="selectAllFiltered">Chọn tất cả</button>
+                        <button type="button" class="btn-lg btn-secondary" @click="clearSelectionFiltered">Bỏ chọn</button>
+                    </div>
+                </div>
+
+                <div class="time-multi-select">
+                    <div
+                        v-for="opt in filteredSelectableTimeSlots"
+                        :key="opt.id"
+                        class="time-chip"
+                        :class="{ selected: isSelected(opt.id), disabled: opt.disabled }"
+                        @click="!opt.disabled && toggleSelect(opt.id)"
+                    >
+                        <span class="chip-label">{{ opt.name }}</span>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn-md btn-secondary" @click="showAddTimeSlotModal = false">Hủy</button>
-                <button class="btn-md btn-primary" @click="addTimeSlot">
+                <button class="btn-md btn-primary" @click="addTimeSlot" :disabled="!canSubmitNew">
                     <svg class="icon-md" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
-                    <span>Thêm khung giờ</span>
+                    <span>Thêm {{ newTimeSlot.time_slot_ids.length || '' }} khung giờ</span>
                 </button>
             </div>
         </div>
@@ -137,7 +182,7 @@
                     </svg>
                     <span>Thứ {{ selectedTimeSlot.day_of_week_id }}</span>
                     <i class="far fa-clock"></i>
-                    <span>{{ selectedTimeSlot.formattedTime }}</span>
+                    <span>{{ selectedTimeSlot.time_slot_name }}</span>
                 </div>
             </div>
             <div class="modal-footer">
@@ -162,22 +207,14 @@
                 required="true"
             />
             <div class="form-group-container">
-                <base-select
-                    v-model="selectedTimeSlot.time_slot_id_start"
-                    :options="timeSlotOptions"
-                    label="Thời gian bắt đầu"
-                    placeholder="Chọn giờ bắt đầu"
-                    widthFull="true"
-                    required="true"
-                />
-                <base-select
-                    v-model="selectedTimeSlot.time_slot_id_end"
-                    :options="endTimeOptions"
-                    label="Thời gian kết thúc"
-                    placeholder="Chọn giờ kết thúc"
-                    widthFull="true"
-                    required="true"
-                />
+            <base-select
+                v-model="selectedTimeSlot.time_slot_id"
+                :options="timeSlotOptions"
+                label="Khung giờ"
+                placeholder="Chọn khung giờ"
+                widthFull="true"
+                required="true"
+            />
             </div>
             <div class="modal-footer">
                 <button class="btn-md btn-secondary" @click="showEditTimeSlotModal = false">Hủy</button>
@@ -209,7 +246,6 @@
 
 <script setup>
 import { ref, computed, getCurrentInstance } from 'vue';
-import BaseSelect from '../BaseSelect.vue';
 import { useStore } from 'vuex';
 const { proxy } = getCurrentInstance();
 const store = useStore();
@@ -228,10 +264,10 @@ const showAddTimeSlotModal = ref(false);
 const showDeleteConfirmModal = ref(false);
 const showEditTimeSlotModal = ref(false);
 const selectedTimeSlotId = ref(null);
+const isLoading = ref(false);
 const selectedTimeSlot = ref({
     day_of_week_id: '',
-    time_slot_id_start: '',
-    time_slot_id_end: '',
+    time_slot_id: '',
     repeat_weekly: true
 });
 
@@ -240,15 +276,8 @@ const timeSlotOptions = computed(() => store.state.configuration.timeSlots);
 
 const newTimeSlot = ref({
     day_of_week_id: '',
-    time_slot_id_start: '',
-    time_slot_id_end: '',
+    time_slot_ids: [],
     repeat_weekly: true
-});
-
-const endTimeOptions = computed(() => {
-    if (!newTimeSlot.value.time_slot_id_start) return timeSlotOptions.value;
-    const startIndex = timeSlotOptions.value.findIndex(opt => opt.id === newTimeSlot.value.time_slot_id_start);
-    return timeSlotOptions.value.slice(startIndex + 1);
 });
 
 const selectedDaySlots = computed(() => {
@@ -258,48 +287,61 @@ const selectedDaySlots = computed(() => {
     );
 });
 
-const validStartTimes = computed(() => {
-    return timeSlotOptions.value.map(point => {
-        const isOverlap = selectedDaySlots.value.some(slot => {
-            const slotStart = timeSlotOptions.value.find(t => t.id == slot.time_slot_id_start);
-            const slotEnd = timeSlotOptions.value.find(t => t.id == slot.time_slot_id_end);
-            return (
-                point.time >= slotStart.time &&
-                point.time <= slotEnd.time
-            );
-        });
-        return { ...point, disabled: isOverlap };
-    });
+const selectableTimeSlots = computed(() => {
+    const usedIds = new Set(selectedDaySlots.value.map(s => s.time_slot_id));
+    return timeSlotOptions.value.map(t => ({ ...t, disabled: usedIds.has(t.id) }));
 });
 
-const validEndTimes = computed(() => {
-    if (!newTimeSlot.value.time_slot_id_start) return timeSlotOptions.value.map(p => ({ ...p, disabled: true }));
-    const startObj = timeSlotOptions.value.find(t => t.id === newTimeSlot.value.time_slot_id_start);
-    return timeSlotOptions.value.map(point => {
-        const afterStart = point.time > startObj.time;
-        const isOverlap = selectedDaySlots.value.some(slot => {
-             const slotStart = timeSlotOptions.value.find(t => t.id == slot.time_slot_id_start);
-             const slotEnd = timeSlotOptions.value.find(t => t.id == slot.time_slot_id_end);
-            return (
-                 startObj.time < slotEnd.time && point.time > slotStart.time
-            );
-        });
-        return { ...point, disabled: !(afterStart && !isOverlap) };
-    });
+const timeFilter = ref('');
+const filteredSelectableTimeSlots = computed(() => {
+    const keyword = timeFilter.value.trim().toLowerCase();
+    const list = selectableTimeSlots.value;
+    if (!keyword) return list;
+    return list.filter(t => (t.name || '').toLowerCase().includes(keyword));
 });
+
+const isSelected = (id) => newTimeSlot.value.time_slot_ids.includes(id);
+const toggleSelect = (id) => {
+    const arr = newTimeSlot.value.time_slot_ids;
+    const idx = arr.indexOf(id);
+    if (idx === -1) arr.push(id); else arr.splice(idx, 1);
+};
+
+const selectAllFiltered = () => {
+    const ids = filteredSelectableTimeSlots.value.filter(i => !i.disabled).map(i => i.id);
+    const set = new Set(newTimeSlot.value.time_slot_ids);
+    ids.forEach(id => set.add(id));
+    newTimeSlot.value.time_slot_ids = Array.from(set);
+};
+
+const clearSelectionFiltered = () => {
+    const ids = new Set(filteredSelectableTimeSlots.value.map(i => i.id));
+    newTimeSlot.value.time_slot_ids = newTimeSlot.value.time_slot_ids.filter(id => !ids.has(id));
+};
+const canSubmitNew = computed(() => !!newTimeSlot.value.day_of_week_id && newTimeSlot.value.time_slot_ids.length > 0);
+
+// Mobile state and helpers
+const selectedMobileDayId = ref(weekDayOptions.value?.[0]?.id || 1);
+const selectedDayObj = computed(() => (weekDayOptions.value || []).find(d => d.id == selectedMobileDayId.value));
 
 const addTimeSlot = async () => {
+    isLoading.value = true;
     try {
-        const response = await proxy.$api.apiPost('me/schedule', newTimeSlot.value);
+        const payload = {
+            day_of_week_id: newTimeSlot.value.day_of_week_id,
+            time_slot_ids: newTimeSlot.value.time_slot_ids,
+        };
+        const response = await proxy.$api.apiPost('me/schedule', payload);
         if (response.data) {
-            const newSlot = response.data;
-            const timeSlotStart = timeSlotOptions.value.find(item => item.id == newSlot.time_slot_id_start);
-            const timeSlotEnd = timeSlotOptions.value.find(item => item.id == newSlot.time_slot_id_end);
-
-            scheduleSlots.value.push({
-                ...newSlot,
-                time_slot_start_name: timeSlotStart.name,
-                time_slot_end_name: timeSlotEnd.name
+            const created = Array.isArray(response.data) ? response.data : (response.data.data || []);
+            created.forEach(item => {
+                const slotOpt = timeSlotOptions.value.find(s => s.id == item.time_slot_id);
+                scheduleSlots.value.push({
+                    id: item.id,
+                    day_of_week_id: item.day_of_week_id,
+                    time_slot_id: item.time_slot_id,
+                    time_slot_name: slotOpt?.name || item.time_slot_name,
+                });
             });
 
             const updateData = {
@@ -316,6 +358,8 @@ const addTimeSlot = async () => {
     } catch (error) {
         proxy.$notification.error(error?.message || 'Thêm khung giờ thất bại!');
         console.error('Failed to add time slot:', error);
+    } finally {
+        isLoading.value = false;
     }
 };
 
@@ -341,8 +385,7 @@ const deleteTimeSlot = async (id) => {
 const resetNewTimeSlot = () => {
     newTimeSlot.value = {
         day_of_week_id: '',
-        time_slot_id_start: '',
-        time_slot_id_end: '',
+        time_slot_ids: [],
         repeat_weekly: true
     };
 };
@@ -351,14 +394,14 @@ const hasTimeSlot = (day, slot) => {
     if (!scheduleSlots.value || scheduleSlots.value.length == 0) {
         return false;
     }
-    return scheduleSlots.value.some(s => s.day_of_week_id == day.id && s.time_slot_id_start == slot.id);
+    return scheduleSlots.value.some(s => s.day_of_week_id == day.id && s.time_slot_id == slot.id);
 };
 
 const getTimeSlotId = (day, slot) => {
     if (!scheduleSlots.value || scheduleSlots.value.length == 0) {
         return null;
     }
-    const s = scheduleSlots.value.find(s => s.day_of_week_id == day.id && s.time_slot_id_start == slot.id);
+    const s = scheduleSlots.value.find(s => s.day_of_week_id == day.id && s.time_slot_id == slot.id);
     return s ? s.id : null;
 };
 
@@ -366,9 +409,9 @@ const getSlotTimeRange = (day, slot) => {
     if (!scheduleSlots.value || scheduleSlots.value.length == 0) {
         return null;
     }
-    const s = scheduleSlots.value.find(s => s.day_of_week_id == day.id && s.time_slot_id_start == slot.id);
+    const s = scheduleSlots.value.find(s => s.day_of_week_id == day.id && s.time_slot_id == slot.id);
     if (s) {
-        return `${s.time_slot_start_name} - ${s.time_slot_end_name}`;
+        return s.time_slot_name || (timeSlotOptions.value.find(t => t.id == s.time_slot_id)?.name) || '';
     }
     return null;
 };
@@ -381,8 +424,8 @@ const handleDeleteTimeSlot = (id) => {
         selectedTimeSlot.value = {
             ...slot,
             dayName,
-            formattedTime: `${slot.time_slot_start_name} - ${slot.time_slot_end_name}`
         };
+        console.log(selectedTimeSlot.value)
         showDeleteConfirmModal.value = true;
     }
 };
@@ -406,21 +449,20 @@ const updateTimeSlot = async () => {
     try {
         const response = await proxy.$api.apiPut(`me/schedule/${selectedTimeSlotId.value}`, {
             day_of_week_id: selectedTimeSlot.value.day_of_week_id,
-            time_slot_id_start: selectedTimeSlot.value.time_slot_id_start,
-            time_slot_id_end: selectedTimeSlot.value.time_slot_id_end,
+            time_slot_id: selectedTimeSlot.value.time_slot_id,
         });
 
         if (response.data) {
             const updatedSlot = response.data;
-            const timeSlotStart = timeSlotOptions.value.find(item => item.id == updatedSlot.time_slot_id_start);
-            const timeSlotEnd = timeSlotOptions.value.find(item => item.id == updatedSlot.time_slot_id_end);
+            const timeSlotObj = timeSlotOptions.value.find(item => item.id == (updatedSlot.time_slot_id || updatedSlot.data?.time_slot_id));
 
             const index = scheduleSlots.value.findIndex(s => s.id === selectedTimeSlotId.value);
             if (index !== -1) {
                 scheduleSlots.value[index] = {
-                    ...updatedSlot,
-                    time_slot_start_name: timeSlotStart.name,
-                    time_slot_end_name: timeSlotEnd.name
+                    ...scheduleSlots.value[index],
+                    day_of_week_id: selectedTimeSlot.value.day_of_week_id,
+                    time_slot_id: selectedTimeSlot.value.time_slot_id,
+                    time_slot_name: timeSlotObj?.name || scheduleSlots.value[index].time_slot_name
                 };
             }
             proxy.$notification.success('Cập nhật khung giờ thành công!');
@@ -434,8 +476,7 @@ const updateTimeSlot = async () => {
 
 const onAddSlot = (day, slot) => {
     newTimeSlot.value.day_of_week_id = day.id;
-    newTimeSlot.value.time_slot_id_start = slot.id;
-    newTimeSlot.value.time_slot_id_end = '';
+    newTimeSlot.value.time_slot_ids = [slot.id];
     newTimeSlot.value.repeat_weekly = true;
     showAddTimeSlotModal.value = true;
 };
@@ -443,6 +484,111 @@ const onAddSlot = (day, slot) => {
 
 <style scoped>
 @import url('@css/profileNew.css');
+/* Mobile schedule */
+.schedule-mobile { display: none; }
+.schedule-mobile .mobile-day-tabs {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 8px 4px 10px 4px;
+    background: #ffffffea;
+    backdrop-filter: blur(2px);
+}
+.schedule-mobile .day-tab {
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    border-radius: 5px;
+    padding: 8px 14px;
+    font-weight: 600;
+    color: #374151;
+    font-size: var(--font-size-small);
+    white-space: nowrap;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.schedule-mobile .day-tab.active {
+    background: #111827;
+    color: #fff;
+    border-color: #111827;
+}
+.schedule-mobile .mobile-time-list { display: grid; gap: 10px; padding: 8px 2px; }
+.schedule-mobile .mobile-time-row {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    align-items: center;
+    background: #f9fafb;
+    border: 1px solid #eef2f7;
+    border-radius: 12px;
+    padding: 13px 12px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+.schedule-mobile .mobile-time-label { color: #6b7280; font-weight: 600; font-size: var(--font-size-small); }
+.schedule-mobile .mobile-time-actions { display: flex; gap: 6px; justify-content: flex-end; }
+
+@media (max-width: 768px) {
+    .schedule-main { display: none; }
+    .schedule-mobile { display: grid; gap: 0.5rem; }
+}
+/* Time multi-select enhancements */
+.time-multi-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.time-multi-controls .actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.time-multi-select {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.5rem;
+}
+
+.time-multi-select .time-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.6rem;
+    border: 1px dashed var(--gray-300);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--gray-700);
+    cursor: pointer;
+    user-select: none;
+    transition: all .15s ease-in-out;
+}
+
+.time-multi-select .time-chip:hover {
+    border-color: var(--color-primary-light);
+    background: var(--color-primary-transparent);
+}
+
+.time-multi-select .time-chip.selected {
+    border-style: solid;
+    border-color: var(--color-primary);
+    background: var(--color-primary-transparent);
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.time-multi-select .time-chip.disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.time-multi-select .chip-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
 .main-content {
     overflow: auto;

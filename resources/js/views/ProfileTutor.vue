@@ -32,6 +32,7 @@ const showAddPackageModal = ref(false);
 const selectedLevelsOfSubject = ref([]);
 const userDataDetail = ref({});
 const currentPackageIndexes = ref({});
+const isLoading = ref(false);
 
 const userDataAction = reactive({
     firstName: '',
@@ -142,6 +143,7 @@ const toggleLevelSelection = (level) => {
 
 // Lấy dữ liệu user từ API
 const getUserDataDetail = async () => {
+    isLoading.value = true;
     try {
         const response = await proxy.$api.apiGet('me/profile');
         userDataDetail.value = response.data;
@@ -155,6 +157,8 @@ const getUserDataDetail = async () => {
         });
     } catch (error) {
         console.error('Failed to fetch user data:', error);
+    } finally {
+        isLoading.value = false;
     }
 };
 
@@ -181,9 +185,7 @@ const calculateProfileCompletion = (userData) => {
         !empty(userData.wards_id) &&
         !empty(userData.address) &&
         !empty(userData.about_you) &&
-        !empty(userData.cccd) &&
-        !empty(userData.cccd_front) &&
-        !empty(userData.cccd_back);
+        !empty(userData.cccd);
 
     // Check education records (Học vấn ít nhất 1)
     completionDetails.education = userData.user_educations?.length > 0;
@@ -478,7 +480,10 @@ onMounted(getUserDataDetail);
 </script>
 
 <template>
-<div class="profile-container">
+<!-- Loading overlay -->
+<base-loading v-if="isLoading" />
+
+<div class="profile-container" v-if="!isLoading">
     <!-- Left Sidebar -->
     <div class="container">
         <div class="profile-sidebar">

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\UserResource;
+use App\Http\Resources\TutorResource;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Contracts\UserEducationRepositoryInterface;
 use App\Repositories\Contracts\UserSubjectRepositoryInterface;
@@ -115,7 +115,7 @@ class AuthController extends Controller
             return response()->json([
                 'access_token' => $token,
                 'token_type' => 'Bearer',
-                'user' => new UserResource($user)
+                'user' => new TutorResource($user)
             ]);
 
         } catch (\Exception $e) {
@@ -169,7 +169,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Login successful',
-            'user' => new UserResource($user),
+            'user' => new TutorResource($user),
             'token' => $token,
         ], 200);
     }

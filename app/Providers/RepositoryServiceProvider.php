@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Repositories\Contracts\ClassRoomRepositoryInterface;
+use App\Repositories\Contracts\ComplaintTypeRepositoryInterface;
 use App\Repositories\Contracts\ConversationRepositoryInterface;
 use App\Repositories\Contracts\DayOfWeekRepositoryInterface;
 use App\Repositories\Contracts\EducationLevelRepositoryInterface;
@@ -14,6 +16,7 @@ use App\Repositories\Contracts\NotificationTypeRepositoryInterface;
 use App\Repositories\Contracts\OnlineLearningPlatformRepositoryInterface;
 use App\Repositories\Contracts\PackageRepositoryInterface;
 use App\Repositories\Contracts\PaymentMethodRepositoryInterface;
+use App\Repositories\Contracts\PaymentRepositoryInterface;
 use App\Repositories\Contracts\StudyLocationRepositoryInterface;
 use App\Repositories\Contracts\SubjectRepositoryInterface;
 use App\Repositories\Contracts\TimeSlotRepositoryInterface;
@@ -27,6 +30,11 @@ use App\Repositories\Contracts\UserPackageRepositoryInterface;
 use App\Repositories\Contracts\UserStudyLocationRepositoryInterface;
 use App\Repositories\Contracts\UserSubjectLevelsRepositoryInterface;
 use App\Repositories\Contracts\UserWeeklyTimeSlotRepositoryInterface;
+use App\Repositories\Contracts\UserBookingComplaintRepositoryInterface;
+use App\Repositories\Contracts\ClassRoomUserJoinRepositoryInterface;
+use App\Repositories\Contracts\TutorSessionRepositoryInterface;
+use App\Repositories\Eloquent\ClassRoomRepository;
+use App\Repositories\Eloquent\ComplaintTypeRepository;
 use App\Repositories\Eloquent\ConversationRepository;
 use App\Repositories\Eloquent\DayOfWeekRepository;
 use App\Repositories\Eloquent\EducationLevelRepository;
@@ -39,6 +47,7 @@ use App\Repositories\Eloquent\NotificationTypeRepository;
 use App\Repositories\Eloquent\OnlineLearningPlatformRepository;
 use App\Repositories\Eloquent\PackageRepository;
 use App\Repositories\Eloquent\PaymentMethodRepository;
+use App\Repositories\Eloquent\PaymentRepository;
 use App\Repositories\Eloquent\StudyLocationRepository;
 use App\Repositories\Eloquent\SubjectRepository;
 use App\Repositories\Eloquent\TimeSlotRepository;
@@ -52,6 +61,9 @@ use App\Repositories\Eloquent\UserPackageRepository;
 use App\Repositories\Eloquent\UserStudyLocationRepository;
 use App\Repositories\Eloquent\UserSubjectLevelsRepository;
 use App\Repositories\Eloquent\UserWeeklyTimeSlotRepository;
+use App\Repositories\Eloquent\UserBookingComplaintRepository;
+use App\Repositories\Eloquent\ClassRoomUserJoinRepository;
+use App\Repositories\Eloquent\TutorSessionRepository;
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryServiceProvider extends ServiceProvider
@@ -86,6 +98,12 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(NotificationLogRepositoryInterface::class, NotificationLogRepository::class);
         $this->app->bind(ConversationRepositoryInterface::class, ConversationRepository::class);
         $this->app->bind(MessageRepositoryInterface::class, MessageRepository::class);
+        $this->app->bind(PaymentRepositoryInterface::class, PaymentRepository::class);
+        $this->app->bind(UserBookingComplaintRepositoryInterface::class, UserBookingComplaintRepository::class);
+        $this->app->bind(ComplaintTypeRepositoryInterface::class, ComplaintTypeRepository::class);
+        $this->app->bind(ClassRoomRepositoryInterface::class, ClassRoomRepository::class);
+        $this->app->bind(ClassRoomUserJoinRepositoryInterface::class, ClassRoomUserJoinRepository::class);
+        $this->app->bind(TutorSessionRepositoryInterface::class, TutorSessionRepository::class);
     }
 
     /**

@@ -13,10 +13,8 @@ class WeeklyScheduleResource extends JsonResource
             'id' => $this->id,
             'user_id' => $this->user_id,
             'day_of_week_id' => $this->day_of_week_id,
-            'time_slot_id_start' => $this->time_slot_id_start,
-            'time_slot_id_end' => $this->time_slot_id_end,
-            'time_slot_start' => $this->timeSlotStart->name,
-            'time_slot_end' => $this->timeSlotEnd->name,
+            'time_slot_id' => $this->time_slot_id,
+            'time_slot_name' => optional($this->timeSlot)->name,
             'day_name' => $this->dayOfWeek->name,
         ];
     }

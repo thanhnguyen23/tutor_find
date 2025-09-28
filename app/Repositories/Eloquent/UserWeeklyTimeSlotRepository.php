@@ -23,8 +23,8 @@ class UserWeeklyTimeSlotRepository implements UserWeeklyTimeSlotRepositoryInterf
         return $this->model
             ->where('user_id', $userId)
             ->orderBy('day_of_week_id')
-            ->orderBy('time_slot_id_start')
-            ->with(['timeSlotStart', 'timeSlotEnd'])
+            ->orderBy('time_slot_id')
+            ->with(['timeSlot'])
             ->get();
     }
 
@@ -34,6 +34,18 @@ class UserWeeklyTimeSlotRepository implements UserWeeklyTimeSlotRepositoryInterf
     public function create(array $data): UserWeeklyTimeSlot
     {
         return $this->model->create($data);
+    }
+
+    /**
+     * Bulk create time slots
+     */
+    public function createMany(array $items): Collection
+    {
+        $created = collect();
+        foreach ($items as $item) {
+            $created->push($this->model->create($item));
+        }
+        return $created;
     }
 
     /**
@@ -62,8 +74,8 @@ class UserWeeklyTimeSlotRepository implements UserWeeklyTimeSlotRepositoryInterf
     {
         return $this->model
             ->where('user_id', $userId)
-            ->where('day_of_week', $dayOfWeek)
-            ->orderBy('start_time')
+            ->where('day_of_week_id', $dayOfWeek)
+            ->orderBy('time_slot_id')
             ->get();
     }
 
@@ -72,13 +84,8 @@ class UserWeeklyTimeSlotRepository implements UserWeeklyTimeSlotRepositoryInterf
      */
     public function getByTimeRange(int $userId, string $startTime, string $endTime): Collection
     {
-        return $this->model
-            ->where('user_id', $userId)
-            ->where('start_time', '>=', $startTime)
-            ->where('end_time', '<=', $endTime)
-            ->orderBy('day_of_week')
-            ->orderBy('start_time')
-            ->get();
+        // Not applicable with discrete time_slot_id model; return empty collection
+        return collect();
     }
 
     /**

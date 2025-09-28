@@ -6,8 +6,6 @@ import {
     getCurrentInstance
 } from 'vue';
 
-import BaseInput from '@/components/BaseInput.vue';
-import BaseSelect from '@/components/BaseSelect.vue';
 import { useStore } from 'vuex';
 
 // Props
@@ -32,40 +30,35 @@ const form = ref({
     email: '',
     address: '',
     about_you: '',
-    title_ads: '',
     cccd: '',
-    cccd_front: null,
-    cccd_back: null,
     referral_link: '',
     free_trial: false,
-    free_study_time: '',
+    tutor_session_id: '',
     provinces_id: '',
     districts_id: '',
     wards_id: '',
     address_detail: '',
 });
 
-const cccdFrontPreview = ref(null);
-const cccdBackPreview = ref(null);
 const showProfileDescriptionModal = ref(false);
 const showPersonalInfoModal = ref(false);
 const showAddressModal = ref(false);
 const showCCCDModal = ref(false);
 const showVideoModal = ref(false);
+const showFreeTrialModal = ref(false);
+const isLoading = ref(false);
 
 const genderOptions = [
     { name: 'Nam', value: 1 },
     { name: 'Nữ', value: 2 },
 ];
 
-const freeTrialDurationOptions = [
-    { value: 15, name: '15 phút' },
-    { value: 30, name: '30 phút' },
-    { value: 45, name: '45 phút' },
-    { value: 60, name: '60 phút' },
-];
-
-const provinceOptions = computed(() => (store.state.configuration.provinces));
+const tutorSessionOptions = computed(() => {
+    return (store.state.configuration.tutorSessions || []).filter(session => session.allow_free)
+});
+const provinceOptions = computed(() => {
+    return (store.state.configuration.provinces)
+});
 const districtOptions = computed(() => {
     if (!form.value.provinces_id) return [];
     return (store.state.configuration.districts || []).filter(d => d.province_id == form.value.provinces_id);
@@ -87,32 +80,20 @@ const loadUserProfile = () => {
         email: userData.email || '',
         address: userData.address || '',
         cccd: userData.cccd || '',
-        cccd_front: userData.cccd_front, // Reset file input
-        cccd_back: userData.cccd_back,  // Reset file input
         referral_link: userData.referral_link,
         free_trial: userData.is_free_study,
-        free_study_time: userData.free_study_time || '',
+        tutor_session_id: userData.tutor_session_id || '',
         about_you: userData.about_you,
-        title_ads: userData.title_ads,
         provinces_id: userData.provinces_id || '',
         districts_id: userData.districts_id || '',
         wards_id: userData.wards_id || '',
         address_detail: userData.address || '',
     };
-    // Load existing CCCD images if they exist
-    if (userData.cccd_front) {
-        cccdFrontPreview.value = userData.cccd_front;
-    } else {
-        cccdFrontPreview.value = null;
-    }
-    if (userData.cccd_back) {
-        cccdBackPreview.value = userData.cccd_back;
-    } else {
-        cccdBackPreview.value = null;
-    }
+    // No CCCD image handling
 };
 
 const saveProfile = async () => {
+    isLoading.value = true;
     try {
         const formData = new FormData();
         formData.append('first_name', form.value.first_name);
@@ -124,76 +105,35 @@ const saveProfile = async () => {
         formData.append('referral_link', form.value.referral_link);
         formData.append('sex', form.value.sex ? 1 : 0);
         formData.append('is_free_study', form.value.free_trial ? 1 : 0);
-        formData.append('free_study_time', form.value.free_study_time);
+        formData.append('tutor_session_id', form.value.tutor_session_id);
         formData.append('about_you', form.value.about_you);
-        formData.append('title_ads', form.value.title_ads);
         formData.append('provinces_id', form.value.provinces_id);
         formData.append('districts_id', form.value.districts_id);
         formData.append('wards_id', form.value.wards_id);
         formData.append('address', form.value.address_detail);
 
-        if (form.value.cccd_front instanceof File) {
-            formData.append('cccd_front', form.value.cccd_front);
-        }
-        if (form.value.cccd_back instanceof File) {
-            formData.append('cccd_back', form.value.cccd_back);
-        }
+        // Remove CCCD image fields
         const response = await proxy.$api.apiPostFormData('me/profile-info', formData);
-        if (response.success) {
+        if (response.data) {
             emit('update-data', response.data);
             proxy.$notification.success('Cập nhật hồ sơ thành công!');
         } else {
             proxy.$notification.error('Cập nhật hồ sơ thất bại!');
         }
+
+        showPersonalInfoModal.value = false;
+        showAddressModal.value = false;
+        showCCCDModal.value = false;
+        showVideoModal.value = false;
+        showFreeTrialModal.value = false;
     } catch (error) {
         proxy.$notification.error(error.message || 'Có lỗi xảy ra khi lưu hồ sơ!');
+    } finally {
+        isLoading.value = false;
     }
 };
 
-function onFileChange(event, key) {
-    const file = event.target.files[0];
-    if (file) {
-        // Kiểm tra kích thước file (10MB = 10 * 1024 * 1024 bytes)
-        const maxSize = 10 * 1024 * 1024;
-        if (file.size > maxSize) {
-            proxy.$notification.error('File quá lớn. Vui lòng chọn file nhỏ hơn 10MB.');
-            event.target.value = ''; // Reset input
-            return;
-        }
-
-        // Kiểm tra loại file
-        if (!file.type.startsWith('image/')) {
-            proxy.$notification.error('Vui lòng chọn file ảnh hợp lệ.');
-            event.target.value = ''; // Reset input
-            return;
-        }
-
-        form.value[key] = file;
-        if (key === 'cccd_front') {
-            cccdFrontPreview.value && URL.revokeObjectURL(cccdFrontPreview.value);
-            cccdFrontPreview.value = URL.createObjectURL(file);
-            proxy.$notification.success('Đã chọn ảnh CCCD mặt trước');
-        }
-        if (key === 'cccd_back') {
-            cccdBackPreview.value && URL.revokeObjectURL(cccdBackPreview.value);
-            cccdBackPreview.value = URL.createObjectURL(file);
-            proxy.$notification.success('Đã chọn ảnh CCCD mặt sau');
-        }
-    }
-}
-
-watch(() => form.value.cccd_front, (file) => {
-    if (!file && cccdFrontPreview.value) {
-        URL.revokeObjectURL(cccdFrontPreview.value);
-        cccdFrontPreview.value = null;
-    }
-});
-watch(() => form.value.cccd_back, (file) => {
-    if (!file && cccdBackPreview.value) {
-        URL.revokeObjectURL(cccdBackPreview.value);
-        cccdBackPreview.value = null;
-    }
-});
+// Remove CCCD image handlers
 
 watch(() => props.userDataDetail, () => {
     loadUserProfile();
@@ -208,28 +148,6 @@ const youtubeEmbedUrl = computed(() => {
     }
     return '';
 });
-
-const triggerFile = (id) => {
-    const input = document.getElementById(id);
-    console.log(input)
-    if (input) {
-        // Reset input value để có thể chọn lại cùng file
-        input.value = '';
-        input.click();
-    }
-}
-const removeFile = (key) => {
-    form.value[key] = null;
-    // Reset preview
-    if (key === 'cccd_front') {
-        cccdFrontPreview.value && URL.revokeObjectURL(cccdFrontPreview.value);
-        cccdFrontPreview.value = null;
-    }
-    if (key === 'cccd_back') {
-        cccdBackPreview.value && URL.revokeObjectURL(cccdBackPreview.value);
-        cccdBackPreview.value = null;
-    }
-}
 
 const getCompletionStatus = (status) => {
     if (status === true) return 'Đã hoàn thiện';
@@ -248,10 +166,68 @@ const getCompletionLabel = (key) => {
     };
     return labels[key] || key;
 };
+
+// Trạng thái hiển thị dưới tên hồ sơ
+const profileStatusText = computed(() => {
+    const completedFlag = props.userDataDetail?.profile_completed ?? 0;
+    const percent = props.userDataDetail?.profile_completion?.percent ?? 0;
+    if (completedFlag === 1) return 'Đã xác thực';
+    if (completedFlag === 0 && percent === 100) return 'Chờ xác thực';
+    return 'Chưa hoàn thiện';
+});
+
+const getSelectedSessionName = () => {
+    // First try to get from userDataDetail if available
+    if (props.userDataDetail?.tutor_session?.time) {
+        return props.userDataDetail.tutor_session.time;
+    }
+    // Fallback to tutorSessionOptions
+    const selectedSession = tutorSessionOptions.value.find(session => session.id == form.value.tutor_session_id);
+    return selectedSession ? selectedSession.time : '';
+};
+
+const formatDuration = (hours) => {
+    if (!hours) return '0 phút';
+    const totalMinutes = Math.round(hours * 60);
+    if (totalMinutes < 60) {
+        return `${totalMinutes} phút`;
+    }
+    const hourPart = Math.floor(totalMinutes / 60);
+    const minutePart = totalMinutes % 60;
+    if (minutePart === 0) {
+        return `${hourPart} giờ`;
+    }
+    return `${hourPart} giờ ${minutePart} phút`;
+};
+
+// Validation computed properties for each modal
+const isPersonalInfoValid = computed(() => {
+    return form.value.first_name &&
+           form.value.last_name &&
+           form.value.sex &&
+           form.value.phone &&
+           form.value.email;
+});
+
+const isProfileDescriptionValid = computed(() => {
+    return form.value.about_you && form.value.about_you.trim().length > 0;
+});
+
+const isVideoIntroValid = computed(() => {
+    return form.value.referral_link && form.value.referral_link.trim().length > 0;
+});
+
+const isFreeTrialValid = computed(() => {
+    if (!form.value.free_trial) return true; // If free trial is disabled, it's valid
+    return form.value.tutor_session_id; // If enabled, must select a session
+});
 </script>
 
 <template>
-<div class="profile-wrapper">
+<!-- Loading overlay -->
+<base-loading v-if="isLoading" />
+
+<div class="profile-wrapper" v-if="!isLoading">
     <div class="profile-sidebar">
         <div class="profile-info section-card">
             <div class="avatar-main main-content">
@@ -263,7 +239,10 @@ const getCompletionLabel = (key) => {
                 </div>
                 <div class="content">
                     <span class="full-name">{{ userDataDetail.full_name || 'Chưa cập nhật' }}</span>
-                    <span class="role-badge">{{ userDataDetail.role || 'Gia sư' }}</span>
+                    <!-- <span class="role-badge">{{ userDataDetail.role || 'Gia sư' }}</span> -->
+                    <div class="profile-status">
+                        {{ profileStatusText }}
+                    </div>
                     <div class="evaluate">
                         <div class="stars">
                             <svg class="icon-lg" v-for="i in 5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#f9ce69" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: rgb(249, 206, 105);"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
@@ -273,76 +252,6 @@ const getCompletionLabel = (key) => {
                     </div>
                 </div>
             </div>
-
-            <!-- <div class="section-wrapper">
-                <div class="title-wrapper">
-                    <span class="title">Thông tin cơ bản</span>
-                </div>
-                <div class="list-item main-content">
-                    <div class="item-wrapper">
-                        <span class="label">Trường học</span>
-                        <div class="content">
-                            <div class="icon-wrapper">
-                                <svg class="icon-lg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"></path><path d="M22 10v6"></path><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"></path></svg>
-                            </div>
-                            <div class="content-wrapper">
-                                <span class="title">{{ userDataDetail.user_educations?.[0]?.school_name || 'Chưa cập nhật' }}</span>
-                                <span class="desc">Nơi đã học</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="item-wrapper">
-                        <span class="label">Email</span>
-                        <div class="content">
-                            <div class="icon-wrapper">
-                                <svg class="icon-lg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"></path><path d="M22 10v6"></path><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"></path></svg>
-                            </div>
-                            <div class="content-wrapper">
-                                <span class="title">{{ userDataDetail.email || 'Chưa cập nhật' }}</span>
-                                <span class="desc">Email liên hệ</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="item-wrapper">
-                        <span class="label">Số điện thoại</span>
-                        <div class="content">
-                            <div class="icon-wrapper">
-                                <svg class="icon-lg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"></path><path d="M22 10v6"></path><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"></path></svg>
-                            </div>
-                            <div class="content-wrapper">
-                                <span class="title">{{ userDataDetail.phone || 'Chưa cập nhật' }}</span>
-                                <span class="desc">Số điện thoại</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="item-wrapper">
-                        <span class="label">Địa chỉ</span>
-                        <div class="content">
-                            <div class="icon-wrapper">
-                                <svg class="icon-lg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"></path><path d="M22 10v6"></path><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"></path></svg>
-                            </div>
-                            <div class="content-wrapper">
-                                <span class="title">{{ userDataDetail.address || 'Chưa cập nhật' }}</span>
-                                <span class="desc">Địa chỉ nhà</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="section-wrapper">
-                <div class="title-wrapper">
-                    <span class="title">Giới thiệu bản thân</span>
-                </div>
-                <div class="describe-wrapper main-content">
-                    <div class="describe-content text-heading-6">
-                        {{ userDataDetail.about_you || 'Chưa cập nhật' }}
-                    </div>
-                    <div class="desc-wrapper">
-                        <span>Mô tả chi tiết sẽ giúp thu hút học viên hơn</span>
-                    </div>
-                </div>
-            </div> -->
         </div>
 
         <div class="section-card profile-completion-card">
@@ -501,16 +410,19 @@ const getCompletionLabel = (key) => {
                     <base-input v-model="form.email" required="true" label="Email" placeholder="example@email.com" type="email" />
                 </div>
                 <div class="form-group">
-                    <BaseSelect v-model="form.provinces_id" :options="provinceOptions" label="Tỉnh/Thành phố" placeholder="Chọn tỉnh/thành phố" />
+                    <base-input v-model="form.cccd" label="Số CCCD" placeholder="001234567890" />
                 </div>
                 <div class="form-group">
-                    <BaseSelect v-model="form.districts_id" :options="districtOptions" label="Quận/Huyện" placeholder="Chọn quận/huyện" :disabled="!form.provinces_id" />
+                    <base-select v-model="form.provinces_id" :options="provinceOptions" label="Tỉnh/Thành phố" placeholder="Chọn tỉnh/thành phố" />
                 </div>
                 <div class="form-group">
-                    <BaseSelect v-model="form.wards_id" :options="wardOptions" label="Phường/Xã" placeholder="Chọn phường/xã" :disabled="!form.districts_id" />
+                    <base-select v-model="form.districts_id" :options="districtOptions" label="Quận/Huyện" placeholder="Chọn quận/huyện" :disabled="!form.provinces_id" />
                 </div>
                 <div class="form-group">
-                    <BaseInput v-model="form.address_detail" label="Địa chỉ chi tiết" placeholder="Số nhà, tên đường..." />
+                    <base-select v-model="form.wards_id" :options="wardOptions" label="Phường/Xã" placeholder="Chọn phường/xã" :disabled="!form.districts_id" />
+                </div>
+                <div class="form-group">
+                    <base-input v-model="form.address_detail" label="Địa chỉ chi tiết" placeholder="Số nhà, tên đường..." />
                 </div>
             </div>
             <div class="note-group">
@@ -535,118 +447,13 @@ const getCompletionLabel = (key) => {
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn-lg btn-primary border-r-2" @click="saveProfile">
+                <button class="btn-lg btn-primary border-r-2" @click="saveProfile" :disabled="!isPersonalInfoValid">
                     <span>Lưu thay đổi</span>
                 </button>
             </div>
         </base-modal>
 
-        <div class="section-card infomation-cccd" @click="showCCCDModal = true">
-            <div class="header-wrapper">
-                <div class="header-left">
-                    <div class="icon-wrapper">
-                        <svg class="icon-lg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect width="20" height="14" x="2" y="5" rx="2"></rect>
-                            <line x1="2" x2="22" y1="10" y2="10"></line>
-                        </svg>
-                    </div>
-                    <div class="title-wrapper">
-                        <span class="title-main">Thông Tin CCCD</span>
-                        <span class="sub-title">Tối ưu hồ sơ để thu hút sự lựa chọn từ học sinh</span>
-                    </div>
-                </div>
-            </div>
-            <div class="section-content_preview">
-                <span>{{ form.cccd ? 'Đã nhập số CCCD' : 'Vui lòng click để nhập thông tin CCCD' }}</span>
-                <svg class="icon-sm" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
-            </div>
-        </div>
-        <base-modal :is-open="showCCCDModal" title="Thông Tin CCCD" @close="showCCCDModal = false">
-            <div class="form-grid">
-                <div class="form-group full-width">
-                    <base-input v-model="form.cccd" label="Số CCCD *" placeholder="001234567890" />
-                </div>
-                <div class="form-group half-width file-group">
-                    <label class="file-label-top text-base">Ảnh CCCD mặt trước *</label>
-                    <div class="up-file-wrapper">
-                        <div v-if="cccdFrontPreview" class="preview-image">
-                            <img :src="cccdFrontPreview" alt="Preview CCCD mặt trước">
-                            <div class="actions-wrapper">
-                                <div class="actions">
-                                    <button type="button" @click.prevent="triggerFile('cccdFront')">
-                                        <svg class="icon-md" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
-                                    </button>
-                                    <button type="button" @click.prevent="removeFile('cccd_front')">
-                                        <svg class="icon-md" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M18 6 6 18"></path>
-                                            <path d="m6 6 12 12"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div v-else class="up-file">
-                            <div class="icon-wrapper" @click="triggerFile('cccdFront')">
-                                <svg class="icon-lg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M5 12h14"></path>
-                                    <path d="M12 5v14"></path>
-                                </svg>
-                            </div>
-                            <div class="content">
-                                <span class="title">Tải lên ảnh CCCD mặt trước</span>
-                                <span class="sub-title">Kéo thả file hoặc <a href="#" @click.prevent="triggerFile('cccdFront')">chọn file</a></span>
-                                <span class="desc">PNG, JPG tối đa 10MB</span>
-                            </div>
-                        </div>
-                        <input type="file" id="cccdFront" accept="image/*" @change="onFileChange($event, 'cccd_front')" style="display:none;" />
-                    </div>
-                </div>
-                <div class="form-group half-width file-group">
-                    <label class="file-label-top text-base">Ảnh CCCD mặt sau *</label>
-                    <div class="up-file-wrapper">
-                        <div v-if="cccdBackPreview" class="preview-image">
-                            <img :src="cccdBackPreview" alt="Preview CCCD mặt sau">
-                            <div class="actions-wrapper">
-                                <div class="actions">
-                                    <button type="button" @click.prevent="triggerFile('cccdBack')">
-                                        <svg class="icon-md" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
-                                    </button>
-                                    <button type="button" @click.prevent="removeFile('cccd_back')">
-                                        <svg class="icon-md" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M18 6 6 18"></path>
-                                            <path d="m6 6 12 12"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div v-else class="up-file">
-                            <div class="icon-wrapper" @click="triggerFile('cccdBack')">
-                                <svg class="icon-lg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M5 12h14"></path>
-                                    <path d="M12 5v14"></path>
-                                </svg>
-                            </div>
-                            <div class="content">
-                                <span class="title">Tải lên ảnh CCCD mặt sau</span>
-                                <span class="sub-title">Kéo thả file hoặc <a href="#" @click.prevent="triggerFile('cccdBack')">chọn file</a></span>
-                                <span class="desc">PNG, JPG tối đa 10MB</span>
-                            </div>
-                        </div>
-                        <input type="file" id="cccdBack" accept="image/*" @change="onFileChange($event, 'cccd_back')" style="display:none;" />
-                    </div>
-                </div>
-            </div>
-            <div class="tips">
-                <span class="tips_header">Lưu ý khi chụp ảnh CCCD</span>
-                <span>Ảnh rõ nét, không bị mờ hoặc chói sáng, Chụp toàn bộ thẻ, không bị cắt góc, Thông tin trên thẻ phải đọc được rõ ràng</span>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-lg btn-primary border-r-2" @click="saveProfile">
-                    <span>Lưu thay đổi</span>
-                </button>
-            </div>
-        </base-modal>
+
 
         <div class="section-card video-intro" @click="showVideoModal = true">
             <div class="header-wrapper">
@@ -700,7 +507,7 @@ const getCompletionLabel = (key) => {
             </div>
 
             <div class="modal-footer">
-                <button class="btn-lg btn-primary border-r-2" @click="saveProfile">
+                <button class="btn-lg btn-primary border-r-2" @click="saveProfile" :disabled="!isVideoIntroValid">
                     <span>Lưu thay đổi</span>
                 </button>
             </div>
@@ -736,23 +543,69 @@ const getCompletionLabel = (key) => {
                         </div>
                     </div>
                 </div>
-                <!-- <div class="form-group">
-                    <base-input v-model="form.title_ads" type="textarea" rows="6" required="true" label="2. Viết một tiêu đề hấp dẫn" placeholder="Gia sư được chứng nhận với 5 năm kinh nghiệm..." />
-                    <div class="note-wrapper">
-                        <svg class="icon-md" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg>
-                        <span>Không bao gồm họ của bạn hoặc trình bày thông tin của bạn trong định dạng CV</span>
-                    </div>
-                </div> -->
             </div>
 
             <div class="modal-footer">
-                <button class="btn-lg btn-primary border-r-2" @click="saveProfile">
+                <button class="btn-lg btn-primary border-r-2" @click="saveProfile" :disabled="!isProfileDescriptionValid">
                     <span>Lưu thay đổi</span>
                 </button>
             </div>
         </base-modal>
 
-        <!-- <div class="section-card free-trial">
+        <base-modal :is-open="showFreeTrialModal" title="Buổi Học Miễn Phí" @close="showFreeTrialModal = false">
+            <div class="main-content">
+                <div class="switch-group">
+                    <div>
+                        <span>Bật buổi học miễn phí</span>
+                        <br>
+                        <span class="switch-desc">Cho phép học sinh học thử miễn phí buổi đầu tiên</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="freeTrial" class="switch-input" v-model="form.free_trial" />
+                        <label for="freeTrial" class="switch-label"></label>
+                    </div>
+                </div>
+                <div v-if="form.free_trial" class="select-session select-time">
+                    <div class="form-group">
+                        <label class="label text-small">Buổi học miễn phí</label>
+                        <div class="session-list">
+                            <div v-for="(s, idx) in tutorSessionOptions" :key="s.id" class="session-item" :class="{ selected: form.tutor_session_id == s.id }" @click="form.tutor_session_id = s.id">
+                                <div class="left-icon" :class="{ active: form.tutor_session_id == s.id }">
+                                    <svg v-if="s.recommended" class="icon-lg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 7v14" />
+                                        <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" /></svg>
+                                    <svg v-else class="icon-lg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" /></svg>
+                                </div>
+                                <div class="content">
+                                    <div class="title-row">
+                                        <div class="title">{{ s.time }}</div>
+                                    </div>
+                                    <div class="meta">
+                                        <svg class="icon-sm" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="10" />
+                                            <polyline points="12 6 12 12 16 14" /></svg>
+                                        <span>Thời lượng: {{ formatDuration(s.duration_hours) }}</span>
+                                    </div>
+                                    <div class="desc">{{ s.description }}</div>
+                                </div>
+                                <div class="right-radio">
+                                    <span class="radio" :class="{ checked: form.tutor_session_id == s.id }"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-lg btn-primary border-r-2" @click="saveProfile" :disabled="!isFreeTrialValid">
+                    <span>Lưu thay đổi</span>
+                </button>
+            </div>
+        </base-modal>
+
+        <div class="section-card free-trial" @click="showFreeTrialModal = true">
             <div class="header-wrapper">
                 <div class="header-left">
                     <div class="icon-wrapper">
@@ -769,94 +622,18 @@ const getCompletionLabel = (key) => {
                     </div>
                 </div>
             </div>
-            <div class="switch-group">
-                <div>
-                    <span>Bật buổi học miễn phí</span>
-                    <br>
-                    <span class="switch-desc">Cho phép học sinh học thử miễn phí buổi đầu tiên</span>
-                </div>
-                <div>
-                    <input type="checkbox" id="freeTrial" class="switch-input" v-model="form.free_trial" />
-                    <label for="freeTrial" class="switch-label"></label>
-                </div>
+            <div class="section-content_preview">
+                <span>{{ form.free_trial && form.tutor_session_id ? `Đã bật buổi học miễn phí (${getSelectedSessionName()})` : 'Vui lòng click để cài đặt buổi học miễn phí' }}</span>
+                <svg class="icon-sm" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
             </div>
-            <div v-if="form.free_trial" class="select-time">
-                <base-select v-model="form.free_study_time" :options="freeTrialDurationOptions" placeholder="Chọn thời gian" label="Thời gian buổi học miễn phí" />
-                <div class="benefit">
-                    <div class="title">Lợi ích của buổi học miễn phí:</div>
-                    <ul>
-                        <li>
-                            <div class="icon-wrapper">
-                                <svg class="icon-md" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                    <path d="m9 11 3 3L22 4"></path>
-                                </svg>
-                            </div>
-                            <div class="content">
-                                <span class="label">Thu hút học sinh mới</span>
-                                <span class="sub-label">Tăng 3x cơ hội được chọn</span>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="icon-wrapper">
-                                <svg class="icon-md" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                    <path d="m9 11 3 3L22 4"></path>
-                                </svg>
-                            </div>
-                            <div class="content">
-                                <span class="label">Tăng độ tin cậy</span>
-                                <span class="sub-label">Thể hiện sự tự tin về chất lượng</span>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="icon-wrapper">
-                                <svg class="icon-md" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                    <path d="m9 11 3 3L22 4"></path>
-                                </svg>
-                            </div>
-                            <div class="content">
-                                <span class="label">Hiểu nhu cầu học sinh</span>
-                                <span class="sub-label">Tùy chỉnh phương pháp phù hợp</span>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="icon-wrapper">
-                                <svg class="icon-md" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                    <path d="m9 11 3 3L22 4"></path>
-                                </svg>
-                            </div>
-                            <div class="content">
-                                <span class="label">Tạo mối quan hệ</span>
-                                <span class="sub-label">Xây dựng niềm tin từ buổi đầu</span>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-                <div class="information-detail-gird">
-                    <div class="information-item">
-                        <span>78%</span>
-                        <span>Tỷ lệ chuyển đổi</span>
-                    </div>
-                    <div class="information-item">
-                        <span>45</span>
-                        <span>Phút miễn phí</span>
-                    </div>
-                    <div class="information-item">
-                        <span>4.9</span>
-                        <span>Đánh giá TB</span>
-                    </div>
-                </div>
-            </div>
-        </div> -->
+        </div>
     </div>
 </div>
 </template>
 
 <style scoped>
 @import url('@css/profileNew.css');
+@import url('@css/lessonInformation.css');
 .note-group {
     display: flex;
     align-items: start;
@@ -900,4 +677,18 @@ const getCompletionLabel = (key) => {
 .feather-x {
     background: #ff3636;
 }
+
+/* Disabled button styles */
+.btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #9ca3af;
+    border-color: #9ca3af;
+}
+
+.btn-primary:disabled:hover {
+    background-color: #9ca3af;
+    border-color: #9ca3af;
+}
+
 </style>

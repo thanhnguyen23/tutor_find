@@ -1,0 +1,368 @@
+.edit-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.col-span-2 {
+    grid-column: span 2;
+}
+
+.date-input-modal {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.icon-calendar {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.date-input-modal input[type="date"] {
+    padding-left: 2.8rem;
+}
+
+.date-picker-input {
+    width: 100%;
+    padding: 0.625rem 0.75rem 0.625rem 2rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    font-size: var(--font-size-mini);
+    color: #374151;
+    cursor: pointer;
+    background: #fff;
+}
+
+.date-picker-input::-webkit-calendar-picker-indicator {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* Adjust styles for base-select within the modal */
+.base-select.form-control-lg .select-button {
+    padding: 0.9rem 1.1rem;
+    border: 1.5px solid #e5e7eb;
+    /* Use border from edit-input */
+    border-radius: 10px;
+    /* Use border-radius from edit-input */
+    background: #fff;
+    /* Ensure white background */
+}
+
+/* Ensure dropdown position is correct */
+.base-select.form-control-lg .select-dropdown {
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 4px;
+    /* Standard spacing below the button */
+}
+
+/* Error states are now handled by base-select component */
+
+.validation-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 0.375rem;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    color: #ef4444;
+    font-size: var(--font-size-mini);
+}
+
+.location-type-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.location-type-option {
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.1rem 1.2rem;
+    cursor: pointer;
+    transition: border 0.2s;
+    position: relative;
+}
+
+.location-type-option.selected {
+    border: 1.5px solid #18181b;
+    background: #f4f4f5;
+}
+
+.location-type-option.selected .option-icon {
+    background: #18181b33;
+}
+
+.location-type-option .right-content {
+    display: flex;
+    align-items: center;
+}
+
+.location-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.option-icon {
+    display: flex;
+    align-items: center;
+    margin-right: 0.7rem;
+    background: #f3f4f6;
+    border-radius: 2rem;
+    width: 40px;
+    height: 40px;
+    justify-content: center;
+}
+
+.option-label {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.1rem;
+}
+
+.option-label .label {
+    font-weight: 600;
+    font-size: var(--font-size-heading-6);
+}
+
+.option-radio {
+    display: flex;
+    align-items: center;
+    margin-left: 1rem;
+}
+
+.option-radio input[type="radio"] {
+    accent-color: #18181b;
+    width: 1rem;
+    height: 1rem;
+}
+
+.popular-badge {
+    background: #22c55e;
+    color: #fff;
+    font-size: 0.8rem;
+    border-radius: 2rem;
+    padding: 0.1rem 0.5rem;
+    margin-left: 0.5rem;
+}
+
+.extra-badge {
+    border: 1px solid #d97706;
+    color: #d97706;
+    background: #fffbeb;
+    font-size: var(--font-size-mini);
+    border-radius: 2rem;
+    padding: 0.1rem 0.5rem;
+    margin-left: 0.5rem;
+}
+
+.option-desc {
+    color: #6b7280;
+    font-size: 0.98rem;
+}
+
+.student-address-block {
+    display: grid;
+    gap: 0.5rem;
+    margin-top: 1.2rem;
+}
+
+.address-label {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    font-size: var(--font-size-heading-6);
+    color: #18181b;
+    display: block;
+}
+
+.required {
+    color: red;
+    font-size: 1.1em;
+}
+
+.address-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    color: #d97706;
+    font-size: var(--font-size-mini);
+}
+
+.edit-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+/* Tutor session tabs */
+.session-list {
+    display: grid;
+    gap: 14px;
+}
+
+.session-item {
+    display: grid;
+    grid-template-columns: 55px 1fr 28px;
+    align-items: center;
+    gap: 14px;
+    border: 2px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 15px 18px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.session-item.selected {
+    border-color: var(--color-primary);
+    background: #eff6ff;
+    box-shadow: 0 1px 4px rgba(29, 78, 216, 0.15);
+}
+
+.session-item .title {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.left-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e5e7eb;
+    color: #111827;
+}
+
+.left-icon.active {
+    background: var(--color-primary);
+    color: #fff;
+}
+
+.content {
+    display: grid;
+    gap: 6px;
+    font-size: var(--font-size-small);
+}
+
+.title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.badge {
+    background: #fde68a;
+    color: #111827;
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: var(--font-size-mini);
+    font-weight: 500;
+}
+
+.meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #334155;
+}
+
+.desc {
+    color: #475569;
+}
+
+.right-radio {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.radio {
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid #9ca3af;
+    border-radius: 999px;
+    background: #fff;
+    display: inline-block;
+    position: relative;
+}
+
+.radio.checked {
+    border-color: var(--color-primary);
+}
+
+.radio.checked::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border-radius: 999px;
+    background: var(--color-primary);
+}
+
+/* Time slots chip select */
+.time-select-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 8px;
+}
+
+.time-chip {
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    padding: 8px 10px;
+    border-radius: 10px;
+    color: #111827;
+    font-size: var(--font-size-small);
+}
+
+.time-chip.selected {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-transparent);
+    color: var(--color-primary);
+}
+
+.time-chip.disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+.time-chip.inactive {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+.error-text {
+    color: #ef4444;
+    font-size: var(--font-size-mini);
+    margin-top: 6px;
+}

@@ -5,7 +5,7 @@ import { useStore } from 'vuex';
 export const register = async (payload) => {
     try {
         let response = await api.apiPost('auth/register', payload);
-        let dataToken = response.token;
+        let dataToken = response.access_token;
 
         setAuthToken(dataToken);
 

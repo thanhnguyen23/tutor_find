@@ -11,6 +11,7 @@ class DayOfWeek extends Model
 
     protected $fillable = [
         'name',
+        'code',
         'slug',
     ];
 

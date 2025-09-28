@@ -1,8 +1,14 @@
-1. sửa lại Mức độ hoàn thiện hồ sơ
--> Thông tin cá nhân (Họ, tên, giới tính, số điện thoại, Email, Tỉnh/Thành phố, Quận/Huyện, Phường/Xã, Địa chỉ chi tiết, Giới thiệu bản thân, Số CCCD (bao gồm cả 2 ảnh), Video Giới Thiệu)
--> học vấn ít nhất 1
--> Kinh nghiệm ít nhất 1
--> Môn học giảng dạy ít nhất 1
--> Ngôn ngữ ít nhất 1
--> Lịch trình hàng tuần
--> Hình thức học
+{
+    "gateway": "MBBank",
+    "transactionDate": "2025-09-15 10:03:00",
+    "accountNumber": "19919397979",
+    "subAccount": null,
+    "code": null,
+    "content": "NGUYEN TIEN THANH chuyen tien",
+    "transferType": "in",
+    "description": "BankAPINotify NGUYEN TIEN THANH chuyen tien",
+    "transferAmount": 5000,
+    "referenceCode": "FT25258961344511",
+    "accumulated": 0,
+    "id": 23363334
+}

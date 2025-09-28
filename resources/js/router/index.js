@@ -47,17 +47,26 @@ const routes = [
     {
         path: "/booking/:uid",
         name: "booking",
-        component: () => import('@views/Booking.vue'),
+        component: () => import('@views/Booking/index.vue'),
+        meta: {
+            requiresAuth: true
+        }
     },
     {
         path: "/booking/manager",
         name: "booking-manager",
-        component: () => import('@views/BookingManager.vue'),
+        component: () => import('@views/Booking/BookingManager.vue'),
+        meta: {
+            requiresAuth: true
+        }
     },
     {
         path: "/booking/success/:id",
         name: "booking-success",
         component: () => import('@components/Booking/BookingSuccess.vue'),
+        meta: {
+            requiresAuth: true
+        }
     },
     {
         path: "/search",
@@ -69,11 +78,41 @@ const routes = [
         path: "/notification",
         name: "notification",
         component: () => import('@views/Notification.vue'),
+        meta: {
+            requiresAuth: true
+        }
     },
     {
         path: "/message",
         name: "message",
         component: () => import('@views/Message.vue'),
+        meta: {
+            requiresAuth: true
+        }
+    },
+    {
+        path: "/zoom",
+        name: "zoom",
+        component: () => import('@views/Zoom.vue'),
+        meta: {
+            requiresAuth: true
+        }
+    },
+    {
+        path: "/classroom-manager",
+        name: "classroom-manager",
+        component: () => import('@views/ClassRoom/Index.vue'),
+        meta: {
+            requiresAuth: true
+        }
+    },
+    {
+        path: "/classroom/:id",
+        name: "classroom-room",
+        component: () => import('@views/ClassRoom/ClassRoom.vue'),
+        meta: {
+            requiresAuth: true
+        }
     },
 ]
 

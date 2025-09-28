@@ -13,6 +13,6 @@ interface UserRepositoryInterface
     public function delete(int $id);
     public function getUserDataDetail(int $id);
     public function getTutorsWithDetails($per_page);
-    public function getTutorDetailByUid(string $uid);
+    public function getUserDetailByUid(string $uid);
     public function searchTutors(array $filters, $per_page);
 }

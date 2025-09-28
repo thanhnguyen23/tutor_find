@@ -1,5 +1,8 @@
 <template>
-<div class="search-page">
+<!-- Loading overlay -->
+<base-loading v-if="isLoading" />
+
+<div class="search-page" v-if="!isLoading">
     <div class="container">
         <div class="header-wrapper">
             <h1 class="title">
@@ -13,34 +16,12 @@
                 <div class="filter-group">
                     <label class="filter-label filter-label-bold">
                         <svg class="icon-md" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                        <span>Vị trí & Thông tin cá nhân</span>
+                        <span>Vị trí & Học vấn & Môn học</span>
                     </label>
                     <div class="filter-row-flex filter-row_wrapper">
                         <div class="filter-group">
                             <base-select v-model="filters.provinces_id" :options="cityOptions" label="Thành phố" placeholder="Tất cả" size="medium" widthFull="true" />
                         </div>
-                        <div class="filter-group">
-                            <base-select v-model="filters.sex" :options="genderOptions" label="Giới tính" placeholder="Tất cả" size="medium" widthFull="true" />
-                        </div>
-                        <div class="filter-group">
-                            <base-select v-model="filters.timeSlotStart" :options="timeSlotOptions" label="Thời gian rảnh bắt đầu" placeholder="Tất cả" size="medium" widthFull="true" />
-                        </div>
-                        <div class="filter-group">
-                            <base-select v-model="filters.timeSlotEnd" :options="timeSlotOptions" label="Thời gian rảnh kết thúc" placeholder="Tất cả" size="medium" widthFull="true" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="separation"></div>
-
-            <div class="filter-row filter-row-flex align-end">
-                <div class="filter-group filter-group-flex2">
-                    <label class="filter-label filter-label-bold">
-                        <svg class="icon-md" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                        <span>Học vấn & Môn học</span>
-                    </label>
-                    <div class="filter-row-flex filter-row_wrapper">
                         <div class="filter-group">
                             <base-select v-model="filters.subject" :options="subjectOptions" label="Môn học" placeholder="Tất cả" size="medium" widthFull="true" />
                         </div>
@@ -242,34 +223,12 @@
                 <div class="filter-group">
                     <label class="filter-label filter-label-bold">
                         <svg class="icon-md" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                        <span>Vị trí & Thông tin cá nhân</span>
+                        <span>Vị trí & Học vấn & Môn họ</span>
                     </label>
                     <div class="filter-row-flex filter-row_wrapper">
                         <div class="filter-group">
                             <base-select v-model="filters.provinces_id" :options="cityOptions" label="Thành phố" placeholder="Tất cả" size="medium" widthFull="true" />
                         </div>
-                        <div class="filter-group">
-                            <base-select v-model="filters.sex" :options="genderOptions" label="Giới tính" placeholder="Tất cả" size="medium" widthFull="true" />
-                        </div>
-                        <div class="filter-group">
-                            <base-select v-model="filters.timeSlotStart" :options="timeSlotOptions" label="Thời gian rảnh bắt đầu" placeholder="Tất cả" size="medium" widthFull="true" />
-                        </div>
-                        <div class="filter-group">
-                            <base-select v-model="filters.timeSlotEnd" :options="timeSlotOptions" label="Thời gian rảnh kết thúc" placeholder="Tất cả" size="medium" widthFull="true" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="separation"></div>
-
-            <div class="filter-row filter-row-flex align-end">
-                <div class="filter-group filter-group-flex2">
-                    <label class="filter-label filter-label-bold">
-                        <svg class="icon-md" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                        <span>Học vấn & Môn học</span>
-                    </label>
-                    <div class="filter-row-flex filter-row_wrapper">
                         <div class="filter-group">
                             <base-select v-model="filters.subject" :options="subjectOptions" label="Môn học" placeholder="Tất cả" size="medium" widthFull="true" />
                         </div>
@@ -340,7 +299,7 @@ import {
 import {
     useRouter, useRoute
 } from 'vue-router';
-import BaseSelect from '@/components/BaseSelect.vue';
+import BaseSelect from '@/components/common/BaseSelect.vue';
 
 import {
     getCurrentInstance
@@ -356,9 +315,6 @@ const route = useRoute();
 // Filter data
 const filters = ref({
     provinces_id: route.query.city ?? "",
-    sex: '',
-    timeSlotStart: '',
-    timeSlotEnd: '',
     subject: route.query.subject ?? "",
     educationLevel: route.query.level ?? "",
     experience: route.query.experience ?? "",
@@ -373,6 +329,7 @@ const currentPage = ref(1);
 const showPriceDetail = ref(false);
 const showFilter = ref(false);
 const dataPaginate = ref({});
+const isLoading = ref(false);
 
 // Options for filters
 const subjectOptions = computed(() => {
@@ -409,28 +366,18 @@ const cityOptions = computed(() => {
     const provinces = store.state.configuration?.provinces || [];
     return provinces.map(p => ({ id: p.id, name: p.name }));
 });
-const genderOptions = computed(() => [
-    { id: '', name: 'Tất cả' },
-    { id: 1, name: 'Nam' },
-    { id: 2, name: 'Nữ' }
-]);
-const timeSlotOptions = computed(() => {
-    const timeSlots = store.state.configuration?.timeSlots || [];
-    return timeSlots.map(slot => ({ id: slot.id, name: slot.name }));
-});
 
 const changePage = async (page) => {
-    currentPage.value = page;
-    const params = {
-        page: currentPage.value
+    isLoading.value = true;
+    try {
+        currentPage.value = page;
+        const params = {
+            page: currentPage.value
     };
 
     hasSearched.value = true;
 
     if (filters.value.provinces_id) params.provinces_id = filters.value.provinces_id;
-    if (filters.value.sex) params.sex = filters.value.sex;
-    if (filters.value.timeSlotStart) params.time_slot_start = filters.value.timeSlotStart;
-    if (filters.value.timeSlotEnd) params.time_slot_end = filters.value.timeSlotEnd;
     if (filters.value.subject) params.subject_id = filters.value.subject;
     if (filters.value.educationLevel) params.education_level_id = filters.value.educationLevel;
     if (filters.value.experience) params.experience = filters.value.experience;
@@ -439,6 +386,9 @@ const changePage = async (page) => {
 
     tutors.value = Array(6).fill().flatMap(() => response.data);
     dataPaginate.value = response.meta;
+    } finally {
+        isLoading.value = false;
+    }
 }
 
 const navigateToTutor = (uid) => {
@@ -496,7 +446,7 @@ watch(() => route.query, (newQuery) => {
 }
 .search-page .header-wrapper {
     text-align: center;
-    margin-bottom: 3rem;
+    margin-bottom: 2.2rem;
 }
 .search-page .title {
     font-size: var(--font-size-heading-2);
@@ -506,8 +456,10 @@ watch(() => route.query, (newQuery) => {
 
 .all-filter {
     display: grid;
-    border-radius: 2rem 1rem 2rem 1rem;
+    border-radius: 1rem;
     margin-bottom: 1rem;
+    border: 1px solid var(--gray-200);
+    padding: 2rem;
 }
 
 .filter-mobile {
@@ -1008,6 +960,11 @@ watch(() => route.query, (newQuery) => {
 
     .tutor-actions {
         flex-direction: column;
+    }
+
+    .all-filter {
+        border: none;
+        padding: 0;
     }
 
     .filter-row {

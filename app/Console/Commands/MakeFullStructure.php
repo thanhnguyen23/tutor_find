@@ -15,23 +15,23 @@ class MakeFullStructure extends Command
     {
         $name = $this->argument('name');
 
-        // Tạo Controller
+        // // Tạo Controller
         // $this->call('make:controller', [
         //     'name' => "Api/{$name}Controller"
         // ]);
 
-        // Tạo Resource
-        $this->call('make:resource', [
-            'name' => "{$name}Resource"
-        ]);
+        // // Tạo Resource
+        // $this->call('make:resource', [
+        //     'name' => "{$name}Resource"
+        // ]);
 
-        // // Tạo Repository Interface
-        // $interfacePath = app_path("Repositories/Contracts/{$name}RepositoryInterface.php");
-        // $this->createFile($interfacePath, $this->getInterfaceStub($name));
+        // Tạo Repository Interface
+        $interfacePath = app_path("Repositories/Contracts/{$name}RepositoryInterface.php");
+        $this->createFile($interfacePath, $this->getInterfaceStub($name));
 
-        // // Tạo Repository Implementation
-        // $repositoryPath = app_path("Repositories/Eloquent/{$name}Repository.php");
-        // $this->createFile($repositoryPath, $this->getRepositoryStub($name));
+        // Tạo Repository Implementation
+        $repositoryPath = app_path("Repositories/Eloquent/{$name}Repository.php");
+        $this->createFile($repositoryPath, $this->getRepositoryStub($name));
 
         $this->info("Đã tạo Controller, Repository, và Resource cho {$name}.");
     }

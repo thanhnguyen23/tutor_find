@@ -25,20 +25,18 @@ class UserProfileResource extends JsonResource
             'phone' => $this->phone,
             'address' => $this->address,
             'about_you' => $this->about_you,
-            'title_ads' => $this->title_ads,
             'role' => $this->roleName(),
             'avatar' => $this->avatar,
             'cccd' => $this->cccd,
-            'cccd_front' => $this->cccd_front ? "/storage/" . $this->cccd_front : null,
-            'cccd_back' => $this->cccd_back ? "/storage/" . $this->cccd_back : null,
             'sex' => $this->sex,
             'referral_link' => $this->referral_link,
             'is_free_study' => $this->is_free_study,
-            'free_study_time' => $this->free_study_time,
+            'tutor_session_id' => $this->tutor_session_id,
             'provinces_id' => $this->provinces_id,
             'districts_id' => $this->districts_id,
             'wards_id' => $this->wards_id,
             'profile_completion' => app(UserService::class)->calculateProfileCompletion($this),
+            'profile_completed' => $this->profile_completed,
             'education_level' => $this->educationLevel ? [
                 'id' => $this->educationLevel?->id,
                 'name' => $this->educationLevel?->name,
@@ -90,12 +88,8 @@ class UserProfileResource extends JsonResource
                 return [
                     'id' => $weeklyTimeSlot->id,
                     'day_of_week_id' => $weeklyTimeSlot->day_of_week_id,
-                    'time_slot_id_start' => $weeklyTimeSlot->time_slot_id_start,
-                    'time_slot_id_end' => $weeklyTimeSlot->time_slot_id_end,
-                    'time_slot_start_name' => optional($weeklyTimeSlot->timeSlotStart)->name,
-                    'time_slot_end_name' => optional($weeklyTimeSlot->timeSlotEnd)->name,
-                    'time_slot_start' => optional($weeklyTimeSlot->timeSlotStart)->name,
-                    'time_slot_end' => optional($weeklyTimeSlot->timeSlotEnd)->name,
+                    'time_slot_id' => $weeklyTimeSlot->time_slot_id,
+                    'time_slot_name' => optional($weeklyTimeSlot->timeSlot)->name,
                 ];
             }),
             'user_packages' => $this->userPackages
@@ -129,9 +123,9 @@ class UserProfileResource extends JsonResource
             'user_languages' => $this->userLanguages->map(function ($language) {
                 return [
                     'id' => $language->id,
-                    'language' => $language->language->name,
+                    'language' => $language->language?->name,
                     'language_id' => $language->language_id,
-                    'level' => $language->level_language->name,
+                    'level' => $language->level_language?->name,
                     'level_language_id' => $language->level_language_id,
                     'is_native' => $language->is_native,
                 ];
@@ -145,6 +139,14 @@ class UserProfileResource extends JsonResource
                     'transportation_fee' => $studyLocations->transportation_fee,
                 ];
             }),
+            'tutor_session' => $this->tutorSession ? [
+                'id' => $this->tutorSession->id,
+                'time' => $this->tutorSession->time,
+                'duration_hours' => $this->tutorSession->duration_hours,
+                'description' => $this->tutorSession->description,
+                'recommended' => $this->tutorSession->recommended,
+                'allow_free' => $this->tutorSession->allow_free,
+            ] : null,
         ];
     }
 }

@@ -21,7 +21,7 @@
                 <div class="price-card" :class="{ 'highlight': level.highlight }" v-for="level in getLevelsBySubject" :key="level.id">
                     <div class="price-card-header">
                         <div class="level-icon" :class="level.class">
-                            <img class="icon-md" :src="`/${level.education_level_image}`" alt="Level Icon">
+                            <img class="icon-md" :src="`${level.education_level_image}`" alt="Level Icon">
                         </div>
                         <div class="level-info">
                             <h4>{{ level.education_level }}</h4>

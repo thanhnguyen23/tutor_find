@@ -3,7 +3,8 @@ import {
     ref,
     computed,
     onMounted,
-    reactive
+    reactive,
+    getCurrentInstance
 } from 'vue';
 import {
     useRouter
@@ -15,11 +16,11 @@ import {
     register
 } from '@/api/auth.js';
 
+const { proxy } = getCurrentInstance();
 const store = useStore();
 const router = useRouter();
 
 const educationLevels = computed(() => store.state.configuration.educationLevels);
-const listSubjects = computed(() => store.state.configuration.subjects);
 
 const ROLE_STUDENT = 0;
 const ROLE_TUTOR = 1;
@@ -41,12 +42,10 @@ const formData = reactive({
     terms: false
 });
 
-const subjectSearch = ref('');
 const showSubjectDropdown = ref(false);
 const showExperienceModal = ref(false);
 const selectedSubject = ref(null);
 const yearsOfExperience = ref('');
-const selectedLevelsOfSubject = ref([]);
 
 const validate = () => {
     Object.keys(formDataErrors).forEach(key => delete formDataErrors[key]);
@@ -100,30 +99,6 @@ const validate = () => {
     return Object.keys(formDataErrors).length === 0;
 };
 
-// Filter subjects based on search input
-const filteredSubjects = computed(() => {
-    if (!subjectSearch.value) return listSubjects.value;
-    return listSubjects.value.filter(subject =>
-        subject.name.toLowerCase().includes(subjectSearch.value.toLowerCase())
-    );
-});
-
-// Toggle subject selection and show modal
-const toggleSubject = (subject) => {
-    const index = formData.subjects.findIndex(s => s.id === subject.id);
-    if (index === -1) {
-        selectedSubject.value = subject;
-        yearsOfExperience.value = '';
-        showExperienceModal.value = true;
-    } else {
-        formData.subjects.splice(index, 1);
-    }
-};
-
-const checkSubjectSelected = (subject) => {
-    return formData.subjects.some(s => s.id === subject.id);
-};
-
 const addSubjectWithExperience = () => {
     if (selectedSubject.value && yearsOfExperience.value) {
         formData.subjects.push({
@@ -143,41 +118,8 @@ const cancelAddSubject = () => {
     yearsOfExperience.value = '';
 };
 
-const removeSubject = (subject) => {
-    const index = formData.subjects.findIndex(s => s.id === subject.id);
-    if (index !== -1) {
-        formData.subjects.splice(index, 1);
-    }
-};
-
 const addEducationLevel = (item) => {
     formData.educationLevels = item.id;
-};
-
-const addEducation = () => {
-    formData.educations.push({
-        school_name: '',
-        major: '',
-        start_date: '',
-        end_date: ''
-    });
-};
-
-const removeEducation = (index) => {
-    formData.educations.splice(index, 1);
-};
-
-const addExperience = () => {
-    formData.experiences.push({
-        name: '',
-        position: '',
-        start_date: '',
-        end_date: ''
-    });
-};
-
-const removeExperience = (index) => {
-    formData.experiences.splice(index, 1);
 };
 
 const resetFormData = () => {
@@ -194,9 +136,16 @@ const handleRegister = async () => {
         const response = await register(formData);
 
         store.dispatch('updateAuth', {
-            token: response.token,
+            token: response.access_token,
             user: response.user
         });
+        // Làm mới thông báo sau khi đăng ký
+        try {
+            const res = await proxy.$api.apiGet('notifications', { is_read: 0 });
+            store.dispatch('updateNotifications', res.data || []);
+        } catch (e) {
+            store.dispatch('updateNotifications', []);
+        }
         router.push('/');
     } catch (error) {
         if (error.response?.errors) {

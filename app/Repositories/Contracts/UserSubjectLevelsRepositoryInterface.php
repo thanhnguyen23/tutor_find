@@ -9,4 +9,7 @@ interface UserSubjectLevelsRepositoryInterface
     public function update(array $data, int $id);
     public function delete(int $id);
     public function deleteAll(int $userSubjectId);
+    public function getLevelsByUserSubject($userSubjectId);
+    public function checkLevelExists($userSubjectId, $levelId);
+    public function getPriceByUserSubjectAndLevel($userId, $subjectId, $educationLevelId);
 }

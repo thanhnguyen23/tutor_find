@@ -15,9 +15,9 @@ class UserLanguageRepository implements userLanguageRepositoryInterface
         $this->model = $model;
     }
 
-    public function getLanguagesByUser(int $userId)
+    public function getLanguagesByUser(int $uid)
     {
-        return $this->model->where('user_id', $userId)->get();
+        return $this->model->where('uid', $uid)->get();
     }
 
     public function create(array $data)
@@ -50,23 +50,17 @@ class UserLanguageRepository implements userLanguageRepositoryInterface
         return $this->model->all();
     }
 
-    public function existsByUserAndLanguage(int $userId, int $languageId, int $excludeId = null): bool
+    public function existsByUserAndLanguage(string $uid, int $languageId): bool
     {
-        $query = $this->model->where('user_id', $userId)
+        $query = $this->model->where('uid', $uid)
             ->where('language_id', $languageId);
-        if ($excludeId) {
-            $query->where('id', '!=', $excludeId);
-        }
         return $query->exists();
     }
 
-    public function existsNativeLanguage(int $userId, int $excludeId = null): bool
+    public function existsNativeLanguage(string $uid): bool
     {
-        $query = $this->model->where('user_id', $userId)
+        $query = $this->model->where('uid', $uid)
             ->where('is_native', 1);
-        if ($excludeId) {
-            $query->where('id', '!=', $excludeId);
-        }
         return $query->exists();
     }
 }

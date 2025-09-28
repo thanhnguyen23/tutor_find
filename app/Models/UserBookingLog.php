@@ -16,11 +16,8 @@ class UserBookingLog extends Model
         UserBookingAction::Pending->value => "Chờ xác nhận",
         UserBookingAction::Confirmed->value => "Đã xác nhận",
         UserBookingAction::Completed->value => "Đã hoàn thành",
-        UserBookingAction::Cancelled->value => "Đã hủy"
-    ];
-
-    protected $casts = [
-        'status' => UserBookingAction::class,
+        UserBookingAction::Cancelled->value => "Đã hủy",
+        UserBookingAction::Rejected->value => "Đã từ chối",
     ];
 
     public function status () {

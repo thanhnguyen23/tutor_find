@@ -13,16 +13,14 @@ class UserWeeklyTimeSlot extends Model
     protected $fillable = [
         'user_id',
         'day_of_week_id',
-        'time_slot_id_start',
-        'time_slot_id_end',
+        'time_slot_id',
         'is_available',
         'teaching_mode'
     ];
 
     protected $casts = [
         'is_available' => 'boolean',
-        'time_slot_id_start' => 'integer',
-        'time_slot_id_end' => 'integer'
+        'time_slot_id' => 'integer'
     ];
 
     /**
@@ -38,13 +36,8 @@ class UserWeeklyTimeSlot extends Model
         return $this->belongsTo(DayOfWeek::class);
     }
 
-    public function timeSlotStart(): BelongsTo
+    public function timeSlot(): BelongsTo
     {
-        return $this->belongsTo(TimeSlot::class, 'time_slot_id_start');
-    }
-
-    public function timeSlotEnd(): BelongsTo
-    {
-        return $this->belongsTo(TimeSlot::class, 'time_slot_id_end');
+        return $this->belongsTo(TimeSlot::class, 'time_slot_id');
     }
 }

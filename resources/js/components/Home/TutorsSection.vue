@@ -98,6 +98,7 @@
                                         </table>
                                     </div>
                                 </div>
+                                <i class="fa-solid fa-angle-down icon-md icon-arrow-down"></i>
                             </div>
                             <div class="rating">
                                 <i class="fas fa-star"></i>
@@ -367,6 +368,10 @@ onMounted(() => {
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.icon-arrow-down {
+    margin-left: 0.5rem;
 }
 
 .price-range {

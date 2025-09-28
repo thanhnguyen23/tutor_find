@@ -10,6 +10,7 @@ const store = createStore({
             message: '',
             type: 'error',
         },
+        notifications: JSON.parse(sessionStorage.getItem('notifications')) || [],
         hiddenFooter: false,
     },
     mutations: {
@@ -38,6 +39,10 @@ const store = createStore({
         setHiddenFooter(state, payload) {
             state.hiddenFooter = payload;
         },
+        setNotifications(state, payload) {
+            state.notifications = payload;
+            sessionStorage.setItem('notifications', JSON.stringify(payload));
+        },
     },
     actions: {
         updateConfiguration({ commit }, payload) {
@@ -63,11 +68,15 @@ const store = createStore({
         updateHiddenFooter({ commit }, payload) {
             commit('setHiddenFooter', payload);
         },
+        updateNotifications({ commit }, payload) {
+            commit('setNotifications', payload);
+        },
     },
     getters: {
         configuration: (state) => state.configuration,
         userData: (state) => state.userData,
         token: (state) => state.token,
+        notifications: (state) => state.notifications,
         isAuthenticated: (state) => !!state.token && Object.keys(state.userData).length > 0,
         showNotification(state) {return state.showNotification;},
         hiddenFooter(state) {return state.hiddenFooter;},

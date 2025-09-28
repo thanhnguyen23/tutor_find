@@ -20,5 +20,9 @@ Route::middleware(['web'])->get('/check-auth', function () {
     return response()->json(['user' => Auth::guard('web')->user()]);
 });
 
+Route::get('/booking/success/{id}', function ($id) {
+    return view('app');
+})->name('booking-success');
+
 Route::view("/{any}", "app")->where('any', '.*');
 

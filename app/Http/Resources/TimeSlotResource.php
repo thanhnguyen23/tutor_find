@@ -17,9 +17,7 @@ class TimeSlotResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'time' => $this->time,
-            'time_slot_start' => $this->timeSlotStart->name,
-            'time_slot_end' => $this->timeSlotEnd->name,
+            'time' => $this->time ? $this->time : null,
         ];
     }
 }

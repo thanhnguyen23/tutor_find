@@ -21,7 +21,7 @@
                                 <div class="confirm-label">Địa điểm:</div>
                                 <div class="confirm-value">
                                     <template v-if="bookingData.studyLocation">
-                                        {{ bookingData.studyLocation.name }}
+                                        {{ bookingData.studyLocation.name || bookingData.studyLocation.label }}
                                     </template>
                                     <template v-else>
                                         Chưa cập nhật
@@ -36,8 +36,6 @@
                         <div class="confirm-card confirm-card-grid">
                             <div class="confirm-card-title">Hình thức thanh toán</div>
                             <div class="confirm-info-grid">
-                                <div class="confirm-label">Phương thức:</div>
-                                <div class="confirm-value">{{ defaultPaymentMethod?.name || 'Thanh toán trực tiếp' }}</div>
                                 <div class="confirm-label">Hình thức:</div>
                                 <div class="confirm-value">{{ bookingData.isPackage ? 'Đặt theo gói' : 'Tính theo giờ' }}</div>
                                 <template v-if="bookingData.isPackage">
@@ -58,6 +56,28 @@
                         </div>
                     </div>
 
+                    <!-- Payment Method Selection -->
+                    <div class="payment-method-section">
+                        <div class="payment-method-title">Chọn phương thức thanh toán</div>
+                        <div class="payment-methods-grid">
+                        <div
+                                v-for="method in paymentMethods"
+                                :key="method.id"
+                                class="payment-method-item"
+                                :class="{ active: selectedPaymentMethod?.code === method.code }"
+                                @click="selectPaymentMethod(method)"
+                            >
+                                <div class="payment-method-icon">
+                                    <img :src="method.icon" :alt="method.name" />
+                                </div>
+                                <div class="payment-method-info">
+                                    <div class="payment-method-name">{{ method.name }}</div>
+                                    <div class="payment-method-desc">{{ method.description }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="confirm-alert">
                         <svg width="22" height="22" fill="none" stroke="#eab308" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
                             <circle cx="12" cy="12" r="10" />
@@ -73,10 +93,10 @@
                 <button
                     class="btn-md btn-primary"
                     @click="handleSubmit"
-                    :disabled="isSubmitting || isSelfBooking"
+                    :disabled="isSubmitting || isSelfBooking || !selectedPaymentMethod"
                 >
                     <span v-if="isSubmitting">Đang xử lý...</span>
-                    <span v-else>Hoàn tất đặt lịch <i class="fas fa-arrow-right"></i></span>
+                    <span v-else>Thanh toán và đặt lịch <i class="fas fa-arrow-right"></i></span>
                 </button>
                 <div v-if="isSelfBooking" class="alert alert-danger mt-2">Bạn không thể đặt lịch với chính mình!</div>
             </div>
@@ -125,6 +145,10 @@
                             <span class="order-value">{{ lessonDurationHours }} giờ</span>
                         </div>
                     </template>
+                    <div class="order-row" v-if="selectedPaymentMethodInfo?.fee">
+                        <span class="order-label">Phí thanh toán</span>
+                        <span class="order-value">{{ selectedPaymentMethodInfo.fee }}</span>
+                    </div>
                     <div class="order-total">
                         <span class="order-label">Tổng cộng</span>
                         <span class="order-value total">{{ $helper.formatCurrency(totalPrice) }}</span>
@@ -189,7 +213,7 @@
         <button
             class="btn-md border-r-2 btn-primary"
             @click="handleSubmit"
-            :disabled="isSubmitting"
+            :disabled="isSubmitting || !selectedPaymentMethod"
         >
             <span v-if="isSubmitting">Đang xử lý...</span>
             <span v-else>Hoàn tất đặt lịch <i class="fas fa-arrow-right"></i></span>
@@ -204,11 +228,12 @@ import { useRouter } from 'vue-router'
 import moment from 'moment'
 import { useStore } from 'vuex'
 import { getCurrentInstance } from 'vue';
+import payApi from '../../api/pay';
 
 const { proxy } = getCurrentInstance();
 const router = useRouter()
 const store = useStore()
-const myUid = computed(() => store.state.auth?.user?.uid || localStorage.getItem('uid'));
+const myUid = computed(() => store.state.auth?.user?.uid);
 const isSelfBooking = computed(() => props.tutorInfo?.uid === myUid.value);
 
 const props = defineProps({
@@ -221,6 +246,8 @@ const emit = defineEmits(['submit', 'back'])
 const handleBack = () => emit('back');
 
 const isSubmitting = ref(false);
+const selectedPaymentMethod = ref({});
+const paymentMethods = ref(store.state.configuration.paymentMethods);
 
 const bookingData = ref({
     subject: {
@@ -244,7 +271,7 @@ const bookingData = ref({
 })
 
 const orderBenefits = [
-    // "Thanh toán trực tiếp cho gia sư tại nơi học",
+    "Thanh toán trực tiếp cho gia sư tại nơi học",
     "Đảm bảo hoàn tiền nếu không hài lòng",
     "Hỗ trợ 24/7 từ đội ngũ EduTutor"
 ]
@@ -289,15 +316,21 @@ const totalPrice = computed(() => {
     return hourlyPrice.value * lessonDurationHours.value;
 });
 
-const defaultPaymentMethod = computed(() => {
-    return store.state.configuration.paymentMethods?.find(method => method.is_default == 1);
+// Get selected payment method info
+const selectedPaymentMethodInfo = computed(() => {
+    return paymentMethods.value.find(method => method.code === selectedPaymentMethod.value);
 });
 
-const isStudentHome = (studyLocation) => {
-    return studyLocation?.home_user === true;
-}
+const selectPaymentMethod = (method) => {
+    selectedPaymentMethod.value = method;
+};
 
-const handleSubmit = async () => {
+const submitCash = async () => {
+    if (!selectedPaymentMethod.value) {
+        alert('Vui lòng chọn phương thức thanh toán');
+        return;
+    }
+
     try {
         isSubmitting.value = true;
 
@@ -315,7 +348,9 @@ const handleSubmit = async () => {
             num_sessions: bookingData.value.isPackage ? bookingData.value.package.number_of_lessons : null,
             total_price: totalPrice.value,
             is_package: bookingData.value.isPackage ?? null,
-            study_location_id: bookingData.value.studyLocation ? bookingData.value.studyLocation.id : null
+            study_location_id: bookingData.value.studyLocation ? bookingData.value.studyLocation.id : null,
+            payment_method: selectedPaymentMethod.value.id,
+            payment_method_code: selectedPaymentMethod.value.code
         }
 
         const response = await proxy.$api.apiPost('bookings', bookingDataSubmit)
@@ -337,6 +372,66 @@ const handleSubmit = async () => {
         isSubmitting.value = false
     }
 }
+
+const submitPayment = async () => {
+    if (!selectedPaymentMethod.value) {
+        alert('Vui lòng chọn phương thức thanh toán');
+        return;
+    }
+
+    try {
+        isSubmitting.value = true;
+
+        const payload = {
+            amount: totalPrice.value,
+            orderInfo: `thanhtoanbooking`,
+            locale: 'vn',
+            uid: props.tutorInfo.uid,
+            subject_id: parseInt(bookingData.value.subject.id),
+            education_level_id: parseInt(bookingData.value.level.id),
+            date: bookingData.value.date,
+            start_time_id: parseInt(bookingData.value.time.start),
+            end_time_id: parseInt(bookingData.value.time.end),
+            note: bookingData.value.note || '',
+            hourly_rate: hourlyPrice.value,
+            duration: lessonDurationHours.value,
+            package_id: bookingData.value.isPackage ? bookingData.value.package.id : null,
+            num_sessions: bookingData.value.isPackage ? bookingData.value.package.number_of_lessons : null,
+            total_price: totalPrice.value,
+            is_package: bookingData.value.isPackage ?? null,
+            study_location_id: bookingData.value.studyLocation ? bookingData.value.studyLocation.id : null,
+            payment_method: selectedPaymentMethod.value.id,
+            payment_method_code: selectedPaymentMethod.value.code
+        };
+
+        const res = await payApi.createPayment(payload);
+        if (res.paymentUrl) {
+            window.location.href = res.paymentUrl;
+        } else {
+            proxy.$notification.error('Không tạo được link thanh toán');
+        }
+    } catch (e) {
+        proxy.$notification.error('Có lỗi khi tạo thanh toán VNPAY');
+    }
+};
+
+const paymentStrategies = {
+    cash: submitCash,
+    momo: submitPayment,
+    vnpay: submitPayment,
+    atm: submitPayment
+};
+
+const handleSubmit = () => {
+    if (!selectedPaymentMethod.value) {
+        alert('Vui lòng chọn phương thức thanh toán');
+        return;
+    }
+
+    const method = selectedPaymentMethod.value.code;
+    const fn = paymentStrategies[method] || submitPayment;
+    fn();
+};
 
 const validateBookingData = (bookingData) => {
     if (!bookingData) {
@@ -381,6 +476,9 @@ onMounted(() => {
     } else {
         handleBack();
     }
+
+    // Set default payment method
+    selectedPaymentMethod.value.code = 'cash';
 })
 </script>
 
@@ -424,6 +522,121 @@ onMounted(() => {
     text-align: right;
 }
 
+/* Payment Method Styles */
+.payment-method-section {
+    margin: 1.5rem 0;
+}
+
+.payment-method-title {
+    font-size: 1.08rem;
+    font-weight: 500;
+    color: #18181b;
+    margin-bottom: 1rem;
+}
+
+.payment-methods-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
+}
+
+.payment-method-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.payment-method-item:hover {
+    border-color: #d1d5db;
+    background: #f9fafb;
+}
+
+.payment-method-item.active {
+    border-color: #18181b;
+    background: #f8fafc;
+}
+
+.payment-method-radio {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.radio-circle {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #d1d5db;
+    border-radius: 50%;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.radio-circle.checked {
+    border-color: #18181b;
+}
+
+.radio-circle.checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    background: #18181b;
+    border-radius: 50%;
+}
+
+.payment-method-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.payment-method-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.payment-method-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.payment-method-name {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #18181b;
+}
+
+.payment-method-desc {
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+.payment-method-fee {
+    display: flex;
+    align-items: center;
+}
+
+.fee-text {
+    font-size: 0.9rem;
+    color: #059669;
+    font-weight: 500;
+}
+
 .confirm-alert {
     background: #fefce8;
     border: 1.5px solid #fde68a;
@@ -452,6 +665,15 @@ onMounted(() => {
     }
     .lesson-info-right .order-summary-card {
         display: none;
+    }
+
+    .payment-method-item {
+        padding: 0.8rem;
+    }
+
+    .payment-method-icon {
+        width: 32px;
+        height: 32px;
     }
 }
 </style>

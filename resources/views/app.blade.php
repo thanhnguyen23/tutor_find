@@ -14,6 +14,7 @@
 		integrity="sha512-bZBu2H0+FGFz/stDN/L0k8J0G8qVsAL0ht1qg5kTwtAheiXwiRKyCq1frwfbSFSJN3jooR5kauE0YjtPzhZtJQ=="
 		crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist+Sans:wght@400;700&display=swap">
+    <script src="https://unpkg.com/simple-peer@latest/simplepeer.min.js"></script>
 </head>
 <body>
     <div id="app"></div>

@@ -59,6 +59,15 @@
                                 <span class="sub-title">{{ bookingData.time.display }}</span>
                             </div>
                         </div>
+                        <div class="lesson-detail-item" v-if="bookingData.tutorSession">
+                            <div class="detail-label">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-md"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10"/></svg>
+                            </div>
+                            <div class="detail-value">
+                                <span class="title">Loại buổi học</span>
+                                <span class="sub-title">{{ bookingData.tutorSession?.name }}</span>
+                            </div>
+                        </div>
 
                         <div class="lesson-detail-item">
                             <div class="detail-label">
@@ -71,7 +80,7 @@
                                 <span class="title">Địa điểm</span>
                                 <span class="sub-title">
                                     <template v-if="bookingData.studyLocation">
-                                        {{ bookingData.studyLocation.name }}
+                                        {{ bookingData.studyLocation.name || bookingData.studyLocation.label }}
                                     </template>
                                     <template v-else>
                                         Chưa cập nhật
@@ -127,7 +136,7 @@
                                 <div class="fee-label">Học phí mỗi giờ:</div>
                                 <div class="fee-value">{{ $helper.formatCurrency(hourlyPrice) }}</div>
                                 <div class="fee-label">Thời lượng:</div>
-                                <div class="fee-value">{{ lessonDurationHours }} giờ</div>
+                                <div class="fee-value">{{ $helper.formatDuration(lessonDurationHours) }}</div>
                             </div>
                             <div class="fee-divider"></div>
                             <div class="fee-details-grid fee-total-row">
@@ -222,7 +231,7 @@
                         </div>
                         <div class="order-row">
                             <span class="order-label">Thời lượng</span>
-                            <span class="order-value">{{ lessonDurationHours }} giờ</span>
+                            <span class="order-value">{{ $helper.formatDuration(lessonDurationHours) }}</span>
                         </div>
                     </template>
                     <template v-else>
@@ -303,11 +312,16 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, getCurrentInstance } from 'vue'
 import { useStore } from 'vuex'
 import moment from 'moment'
 
-const store = useStore();
+// ============================
+// Core setup
+// ============================
+const { proxy } = getCurrentInstance()
+const store = useStore()
+
 const props = defineProps({
     tutorInfo: {
         type: Object,
@@ -319,6 +333,10 @@ const emit = defineEmits(['next', 'back'])
 const handleNext = () => emit('next')
 const handleBack = () => emit('back')
 
+// ============================
+// State chính
+// ============================
+const STORAGE_KEY = 'bookingData'
 const bookingData = ref({
     subject: {
         id: '',
@@ -338,187 +356,191 @@ const bookingData = ref({
     package: null,
     hourly_price: 0,
     total_price: 0,
-    total_hourly_price: 0
+    total_hourly_price: 0,
+    tutorSession: null
 })
 
 const orderBenefits = [
-    // "Thanh toán trực tiếp cho gia sư tại nơi học",
     "Đảm bảo hoàn tiền nếu không hài lòng",
     "Hỗ trợ 24/7 từ đội ngũ EduTutor"
 ]
 
 const isPackage = ref(false)
 const selected = ref(null)
-const myUid = computed(() => store.state.auth?.user?.uid || localStorage.getItem('uid'));
-const isSelfBooking = computed(() => props.tutorInfo?.uid === myUid.value);
+const myUid = computed(() => store.state.auth?.user?.uid || localStorage.getItem('uid'))
+const isSelfBooking = computed(() => props.tutorInfo?.uid === myUid.value)
 
-// Get available packages based on selected subject and level
+// ============================
+// Computed properties
+// ============================
 const availablePackages = computed(() => {
     if (!bookingData.value.subject.id || !bookingData.value.level.id) {
-        return [];
+        return []
     }
     return props.tutorInfo.user_packages.filter(
         item => item.subject_id === bookingData.value.subject.id &&
         item.level_id === bookingData.value.level.id
-    );
-});
+    )
+})
 
-// Calculate hourly price based on subject and level
-const hourlyPrice = computed(() => {
-    if (!bookingData.value.subject.id || !bookingData.value.level.id || !props.tutorInfo?.user_subjects) {
-        return 0;
-    }
-    const selectedSubject = props.tutorInfo.user_subjects.find(
-        s => s.subject_id === bookingData.value.subject.id
-    );
-    if (!selectedSubject) return 0;
+const selectedSubject = computed(() =>
+    props.tutorInfo?.user_subjects?.find(s => s.subject_id === bookingData.value.subject.id)
+)
 
-    const selectedLevel = selectedSubject.user_subject_levels.find(
+const selectedLevel = computed(() =>
+    selectedSubject.value?.user_subject_levels?.find(
         lvl => lvl.education_level_id === bookingData.value.level.id
-    );
-    return selectedLevel ? selectedLevel.price : 0;
-});
+    )
+)
 
-// Calculate lesson duration in hours
+const timeOptions = computed(() =>
+    proxy.$helper.handleTimeSlot(store.state.configuration.timeSlots || [], bookingData.value.date)
+)
+
+// Duration now comes from selected Tutor Session instead of start/end times
 const lessonDurationHours = computed(() => {
-    if (!bookingData.value.time.start || !bookingData.value.time.end) {
-        return 0;
-    }
-    const startTime = moment(bookingData.value.time.start, 'HH:mm');
-    const endTime = moment(bookingData.value.time.end, 'HH:mm');
+    const hours = bookingData.value.tutorSession?.duration_hours
+    const num = parseFloat(hours)
+    return Number.isFinite(num) ? num : 0
+})
 
-    if (!startTime.isValid() || !endTime.isValid() || endTime.isBefore(startTime)) {
-        return 0;
-    }
-
-    const duration = moment.duration(endTime.diff(startTime));
-    return duration.asHours();
-});
-
-// Calculate total price based on package or hourly rate
 const totalPrice = computed(() => {
     if (isPackage.value && selected.value !== null) {
-        const selectedPackage = availablePackages.value[selected.value];
-        return selectedPackage ? selectedPackage.price : 0;
+        const selectedPackage = availablePackages.value[selected.value]
+        return selectedPackage ? selectedPackage.price : 0
     }
-    return hourlyPrice.value * lessonDurationHours.value;
-});
+    return hourlyPrice.value * lessonDurationHours.value
+})
 
-// Calculate total lessons based on package or single lesson
 const totalLessons = computed(() => {
     if (isPackage.value && selected.value !== null) {
-        const selectedPackage = availablePackages.value[selected.value];
-        return selectedPackage ? selectedPackage.number_of_lessons : 1;
+        const selectedPackage = availablePackages.value[selected.value]
+        return selectedPackage ? selectedPackage.number_of_lessons : 1
     }
-    return 1;
-});
+    return 1
+})
 
-// Handle package selection
+const hourlyPrice = computed(() => selectedLevel.value?.price || 0)
+
+// ============================
+// Utility functions
+// ============================
+const saveBookingData = (data) => {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+}
+
+const loadBookingData = () => {
+    const raw = sessionStorage.getItem(STORAGE_KEY)
+    return raw ? JSON.parse(raw) : null
+}
+
+const validateBookingData = (data) => {
+    if (!data) return false
+
+    const hasRequiredFields = !!(
+        data.subject?.id && data.subject?.name &&
+        data.level?.id && data.level?.name &&
+        data.date && data.time?.start && data.time?.end &&
+        data.hourly_price >= 0 && data.total_price >= 0
+    )
+
+    if (!hasRequiredFields) return false
+
+    // Check if selected time slot is not in the past
+    const now = new Date()
+    const currentTime = moment(now).format('HH:mm')
+    const currentDate = moment(now).format('YYYY-MM-DD')
+    const isToday = data.date === currentDate
+
+    if (isToday && data.time?.start) {
+        const startTimeObj = timeOptions.value.find(t => t.id === data.time.start)
+        if (startTimeObj && startTimeObj.time) {
+            const slotTime = moment(startTimeObj.time, 'HH:mm').format('HH:mm')
+            if (slotTime <= currentTime) {
+                proxy.$notification?.error?.('Thời gian đã chọn đã qua, vui lòng chọn thời gian khác')
+                return false
+            }
+        }
+    }
+
+    return true
+}
+
+// ============================
+// Handlers
+// ============================
 const handlePackageSelect = (index) => {
-    selected.value = index;
+    selected.value = index
     if (index !== null) {
-        const selectedPackage = availablePackages.value[index];
+        const selectedPackage = availablePackages.value[index]
         bookingData.value.package = {
             id: selectedPackage.id,
             name: selectedPackage.name,
             price: selectedPackage.price,
             number_of_lessons: selectedPackage.number_of_lessons
-        };
-        bookingData.value.total_price = selectedPackage.price;
+        }
+        bookingData.value.total_price = selectedPackage.price
     } else {
-        bookingData.value.package = null;
-        bookingData.value.total_price = hourlyPrice.value * lessonDurationHours.value;
+        bookingData.value.package = null
+        bookingData.value.total_price = hourlyPrice.value * lessonDurationHours.value
     }
-    sessionStorage.setItem('bookingData', JSON.stringify({
+    saveBookingData({
         ...bookingData.value,
         isPackage: isPackage.value
-    }));
-};
-
-const validateBookingData = (bookingData) => {
-    if (!bookingData) {
-        return false;
-    }
-
-    // Kiểm tra các trường bắt buộc
-    if (!bookingData.subject?.id || !bookingData.subject?.name) {
-        return false;
-    }
-
-    if (!bookingData.level?.id || !bookingData.level?.name) {
-        return false;
-    }
-
-    if (!bookingData.date || bookingData.date.trim() === '') {
-        return false;
-    }
-
-    if (!bookingData.time?.start || !bookingData.time?.end || !bookingData.time?.display) {
-        return false;
-    }
-
-    // Kiểm tra các giá trị số
-    if (bookingData.hourly_price < 0 || bookingData.total_price < 0) {
-        return false;
-    }
-
-    return true;
+    })
 }
 
-const isStudentHome = (studyLocation) => {
-    return studyLocation?.home_user === true;
-}
-
-// Watch isPackage changes to handle default selection and price updates
+// ============================
+// Watchers
+// ============================
 watch(isPackage, (newValue) => {
     if (newValue) {
-        // When switching to package tab, select the popular package (index 1)
-        selected.value = 0;
-        const selectedPackage = availablePackages.value[0];
+        selected.value = 0
+        const selectedPackage = availablePackages.value[0]
         if (selectedPackage) {
             bookingData.value.package = {
                 id: selectedPackage.id,
                 name: selectedPackage.name,
                 price: selectedPackage.price,
                 number_of_lessons: selectedPackage.number_of_lessons
-            };
-            bookingData.value.total_price = selectedPackage.price;
+            }
+            bookingData.value.total_price = selectedPackage.price
         }
     } else {
-        // When switching to hourly tab, clear package selection
-        selected.value = null;
-        bookingData.value.package = null;
-        bookingData.value.total_price = hourlyPrice.value * lessonDurationHours.value;
+        selected.value = null
+        bookingData.value.package = null
+        bookingData.value.total_price = hourlyPrice.value * lessonDurationHours.value
     }
-    sessionStorage.setItem('bookingData', JSON.stringify({
+    saveBookingData({
         ...bookingData.value,
         isPackage: isPackage.value
-    }));
-});
+    })
+})
 
+// ============================
+// Lifecycle
+// ============================
 onMounted(() => {
-    const storedData = sessionStorage.getItem('bookingData');
-    const data = JSON.parse(storedData);
+    const data = loadBookingData()
 
     if (validateBookingData(data)) {
         bookingData.value = {
             ...data,
             hourly_price: hourlyPrice.value,
             total_price: totalPrice.value
-        };
-        // Set selected package if exists in stored data
+        }
+
         if (data.isPackage) {
-            isPackage.value = true;
+            isPackage.value = true
             const index = availablePackages.value.findIndex(
                 p => p.id === bookingData.value.package?.id
-            );
+            )
             if (index !== -1) {
-                selected.value = index;
+                selected.value = index
             }
         }
     } else {
-        // handleBack();
-        alert("rỗng")
+        handleBack()
     }
 })
 </script>

@@ -127,47 +127,26 @@ class UserProfileController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'first_name' => 'required|string|max:255',
-                'last_name' => 'required|string|max:255',
-                'phone' => 'required|string|max:20',
-                'email' => 'required|email|max:255',
-                'address' => 'required|string|max:255',
-                'about_you' => 'required|string|max:255',
-                'title_ads' => 'required|string|max:255',
-                'cccd' => 'required|string|max:20',
-                'sex' => 'required|integer|in:1,2',
-                'is_free_study' => 'required|integer|max:1',
-                'free_study_time' => 'required|integer|min:1',
-                'cccd_front' => 'nullable|image|mimes:jpeg,png,jpg|max:5120', // 5MB max
-                'cccd_back' => 'nullable|image|mimes:jpeg,png,jpg|max:5120', // 5MB max
-                'provinces_id' => 'required|integer',
-                'districts_id' => 'required|integer',
-                'wards_id' => 'required|integer',
+                'first_name' => 'nullable|string|max:255',
+                'last_name' => 'nullable|string|max:255',
+                'phone' => 'nullable|string|max:20',
+                'email' => 'nullable|email|max:255',
+                'address' => 'nullable|string|max:255',
+                'about_you' => 'nullable|string|max:255',
+                'cccd' => 'nullable|string|max:20',
+                'sex' => 'nullable|integer|in:1,2',
+                'is_free_study' => 'nullable|integer|max:1',
+                'tutor_session_id' => 'nullable|integer|exists:tutor_sessions,id',
+                'provinces_id' => 'nullable|integer',
+                'districts_id' => 'nullable|integer',
+                'wards_id' => 'nullable|integer',
             ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'message' => 'Validation failed',
-                    'errors' => $validator->errors()
-                ], 422);
-            }
 
             $user = auth()->user();
             $data = $request->only([
-                'first_name', 'last_name', 'phone', 'email', 'address', 'about_you', 'title_ads', 'referral_link',
-                'cccd', 'sex', 'is_free_study', 'free_study_time', 'provinces_id', 'districts_id', 'wards_id'
+                'first_name', 'last_name', 'phone', 'email', 'address', 'about_you', 'referral_link',
+                'cccd', 'sex', 'is_free_study', 'tutor_session_id', 'provinces_id', 'districts_id', 'wards_id'
             ]);
-
-            // Handle file uploads
-            if ($request->hasFile('cccd_front')) {
-                $cccdFrontPath = $request->file('cccd_front')->store('cccd', 'public');
-                $data['cccd_front'] = $cccdFrontPath;
-            }
-
-            if ($request->hasFile('cccd_back')) {
-                $cccdBackPath = $request->file('cccd_back')->store('cccd', 'public');
-                $data['cccd_back'] = $cccdBackPath;
-            }
 
             $updatedUser = $this->userRepository->update($user->id, $data);
 
@@ -365,7 +344,7 @@ class UserProfileController extends Controller
             foreach ($request->levels as $level) {
                 $this->userSubjectLevelsRepository->create([
                     'user_subject_id' => $subject->id,
-                    'level_id' => $level['level_id'],
+                    'education_level_id' => $level['level_id'],
                     'price' => $level['price']
                 ]);
             }
@@ -682,41 +661,44 @@ class UserProfileController extends Controller
         try {
             $request->validate([
                 'day_of_week_id' => 'required|exists:day_of_weeks,id',
-                'time_slot_id_start' => 'required|exists:time_slots,id',
-                'time_slot_id_end' => 'required|exists:time_slots,id|gte:time_slot_id_start',
+                'time_slot_ids' => 'required|array|min:1',
+                'time_slot_ids.*' => 'required|exists:time_slots,id',
             ]);
 
             $userId = auth()->id();
-            $startSlot = TimeSlot::find($request->time_slot_id_start);
-            $endSlot = TimeSlot::find($request->time_slot_id_end);
 
             // Lấy tất cả slot đã có của user cho day_of_week này
             $existingSlots = $this->userWeeklyTimeSlotRepository->getTimeSlotsByUser($userId)
                 ->where('day_of_week_id', $request->day_of_week_id);
 
-            // Kiểm tra overlap
-            foreach ($existingSlots as $slot) {
-                $slotStart = TimeSlot::find($slot->time_slot_id_start);
-                $slotEnd = TimeSlot::find($slot->time_slot_id_end);
+            $existingTimeSlotIds = $existingSlots->pluck('time_slot_id')->all();
+            $incomingIds = $request->input('time_slot_ids', []);
 
-                // Nếu khoảng mới giao với khoảng đã có
-                if (
-                    ($startSlot->time < $slotEnd->time && $endSlot->time > $slotStart->time)
-                ) {
-                    return response()->json([
-                        'message' => 'Khung giờ này đã bị trùng với khung giờ đã có! Vui lòng chọn khung giờ khác.'
-                    ], 422);
-                }
+            // Loại bỏ những id đã tồn tại
+            $toCreateIds = array_values(array_diff($incomingIds, $existingTimeSlotIds));
+
+            if (empty($toCreateIds)) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'No new time slots to add',
+                    'data' => []
+                ]);
             }
 
-            $data = $request->all();
-            $data['user_id'] = $userId;
-            $newSlot = $this->userWeeklyTimeSlotRepository->create($data);
+            $items = array_map(function ($timeSlotId) use ($request, $userId) {
+                return [
+                    'user_id' => $userId,
+                    'day_of_week_id' => $request->day_of_week_id,
+                    'time_slot_id' => $timeSlotId,
+                ];
+            }, $toCreateIds);
+
+            $created = $this->userWeeklyTimeSlotRepository->createMany($items);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Time slot added successfully',
-                'data' => new WeeklyScheduleResource($newSlot)
+                'message' => 'Time slots added successfully',
+                'data' => WeeklyScheduleResource::collection($created)
             ]);
         } catch (ValidationException $e) {
             return response()->json(['message' => $e->errors()], 422);
@@ -731,8 +713,7 @@ class UserProfileController extends Controller
         try {
             $request->validate([
                 'day_of_week_id' => 'required|exists:day_of_weeks,id',
-                'time_slot_id_start' => 'required|exists:time_slots,id',
-                'time_slot_id_end' => 'required|exists:time_slots,id|gte:time_slot_id_start',
+                'time_slot_id' => 'required|exists:time_slots,id',
             ]);
             $timeSlot = $this->userWeeklyTimeSlotRepository->getTimeSlotById($id);
             if (!$timeSlot || $timeSlot->user_id !== auth()->id()) {
@@ -794,13 +775,14 @@ class UserProfileController extends Controller
 
             $user = auth()->user();
             // Kiểm tra trùng ngôn ngữ
-            if ($this->userLanguageRepository->existsByUserAndLanguage($user->id, $request->language_id)) {
+
+            if ($this->userLanguageRepository->existsByUserAndLanguage($user->uid, $request->language_id)) {
                 return response()->json([
                     'message' => 'Ngôn ngữ này đã tồn tại!'
                 ], 422);
             }
             // Kiểm tra đã có ngôn ngữ mẹ đẻ chưa
-            if ($request->is_native && $this->userLanguageRepository->existsNativeLanguage($user->id)) {
+            if ($request->is_native && $this->userLanguageRepository->existsNativeLanguage($user->uid)) {
                 return response()->json([
                     'message' => 'Bạn chỉ được chọn một ngôn ngữ mẹ đẻ!'
                 ], 422);
@@ -808,12 +790,10 @@ class UserProfileController extends Controller
 
             $language = $this->userLanguageRepository->create([
                 'language_id' => $request->language_id,
-                'level_language_id' => $request->is_native ? null : $request->level_language_id,
+                'level_language_id' => $request->level_language_id ?? null,
                 'is_native' => $request->is_native,
-                'user_id' => $user->id
+                'uid' => $user->uid
             ]);
-
-            Log::info($language);
 
             return response()->json([
                 'success' => true,
@@ -853,13 +833,13 @@ class UserProfileController extends Controller
             }
 
             // Kiểm tra trùng ngôn ngữ (trừ chính bản ghi đang sửa)
-            if ($this->userLanguageRepository->existsByUserAndLanguage($user->id, $request->language_id, $id)) {
+            if ($this->userLanguageRepository->existsByUserAndLanguage($user->uid, $request->language_id)) {
                 return response()->json([
                     'message' => 'Ngôn ngữ này đã tồn tại!'
                 ], 422);
             }
             // Kiểm tra đã có ngôn ngữ mẹ đẻ chưa (trừ chính bản ghi đang sửa)
-            if ($request->is_native && $this->userLanguageRepository->existsNativeLanguage($user->id, $id)) {
+            if ($request->is_native && $this->userLanguageRepository->existsNativeLanguage($user->uid)) {
                 return response()->json([
                     'message' => 'Bạn chỉ được chọn một ngôn ngữ mẹ đẻ!'
                 ], 422);

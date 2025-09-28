@@ -59,4 +59,12 @@ class UserSubjectLevelsRepository implements UserSubjectLevelsRepositoryInterfac
             ->where('education_level_id', $levelId)
             ->exists();
     }
+
+    public function getPriceByUserSubjectAndLevel($userId, $subjectId, $educationLevelId)
+    {
+        return $this->model->whereHas('user_subject', function($query) use ($userId, $subjectId) {
+            $query->where('user_id', $userId)
+                  ->where('subject_id', $subjectId);
+        })->where('education_level_id', $educationLevelId)->first();
+    }
 }

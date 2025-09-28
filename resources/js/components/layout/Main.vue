@@ -4,7 +4,7 @@ import Header from "./Header.vue";
 import { useRoute } from "vue-router";
 import { getCurrentInstance, onMounted } from "vue";
 import { useStore } from "vuex";
-import Notification from "../Notification.vue";
+import Notification from "../common/Notification.vue";
 
 const store = useStore();
 const route = useRoute();

@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\UserStudyLocation;
 use App\Services\UserService;
+use Illuminate\Support\Facades\Log;
 
 class UserStudyLocationObserver
 {
@@ -24,6 +25,7 @@ class UserStudyLocationObserver
 
     protected function updateProfileCompletion(UserStudyLocation $studyLocation)
     {
+        Log::info($studyLocation);
         $user = $studyLocation->user;
         if ($user) {
             app(UserService::class)->calculateAndSaveProfileCompletion($user);

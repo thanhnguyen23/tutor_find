@@ -35,11 +35,19 @@ return [
             'key' => env('PUSHER_APP_KEY'),
             'secret' => env('PUSHER_APP_SECRET'),
             'app_id' => env('PUSHER_APP_ID'),
+            // 'options' => [
+            //     'host' => env('PUSHER_HOST') ?: 'api-'.env('PUSHER_APP_CLUSTER', 'mt1').'.pusher.com',
+            //     'port' => env('PUSHER_PORT', 6001),
+            //     'scheme' => env('PUSHER_SCHEME', 'https'),
+            //     'encrypted' => true,
+            //     'useTLS' => env('PUSHER_SCHEME', 'https') === 'https',
+            // ],
             'options' => [
-                'host' => env('PUSHER_HOST') ?: 'api-'.env('PUSHER_APP_CLUSTER', 'mt1').'.pusher.com',
-                'port' => env('PUSHER_PORT', 6001),
+                'cluster' => env('PUSHER_APP_CLUSTER'),
+                'host' => 'api-'.env('PUSHER_APP_CLUSTER', 'ap1').'.pusher.com',
+                'port' => env('PUSHER_PORT', 443),
                 'scheme' => env('PUSHER_SCHEME', 'https'),
-                'encrypted' => true,
+                'encrypted' => true,  // Bật encryption cho production
                 'useTLS' => env('PUSHER_SCHEME', 'https') === 'https',
             ],
             'client_options' => [

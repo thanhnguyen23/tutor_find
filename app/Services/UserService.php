@@ -119,9 +119,7 @@ class UserService
             !empty($user->wards_id) &&
             !empty($user->address) &&
             !empty($user->about_you) &&
-            !empty($user->cccd) &&
-            !empty($user->cccd_front) &&
-            !empty($user->cccd_back);
+            !empty($user->cccd);
 
         // Check education records (Học vấn ít nhất 1)
         $completionDetails['education'] = $user->userEducations->count() > 0;

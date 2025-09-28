@@ -1,5 +1,8 @@
 <template>
-<div class="section-card">
+<!-- Loading overlay -->
+<base-loading v-if="isLoading" />
+
+<div class="section-card" v-if="!isLoading">
     <div class="header-wrapper">
         <div class="header-left">
             <div class="icon-wrapper">
@@ -62,10 +65,10 @@
                     <template v-if="isStudentHome(type) && selectedTypes.includes(type.value)">
                         <div class="student-address-block">
                             <div class="item-block">
-                                <BaseInput :required="true" v-model="maxDistance[type.value]" label="Bán kính tối đa (km)" placeholder="Nhập bán kính tối đa (km)" size="base" type="number" min="1" />
+                                <base-input :required="true" v-model="maxDistance[type.value]" label="Bán kính tối đa (km)" placeholder="Nhập bán kính tối đa (km)" size="base" type="number" min="1" />
                             </div>
                             <div class="item-block">
-                                <BaseInput :required="true" v-model="transportationFee[type.value]" label="Phí di chuyển (VNĐ/km)" placeholder="Nhập phí di chuyển (VNĐ/km)" size="base" type="number" min="0" />
+                                <base-input :required="true" v-model="transportationFee[type.value]" label="Phí di chuyển (VNĐ/km)" placeholder="Nhập phí di chuyển (VNĐ/km)" size="base" type="number" min="0" />
                             </div>
                         </div>
 
@@ -103,7 +106,6 @@ import {
 import {
     useStore,
 } from 'vuex';
-import BaseInput from '../BaseInput.vue';
 
 const props = defineProps({
     userDataDetail: {
@@ -119,6 +121,7 @@ const maxDistance = ref({});
 const transportationFee = ref({});
 
 const loading = ref(false);
+const isLoading = ref(false);
 const userAddress = computed(() => store.state.userData?.address);
 
 const emit = defineEmits(['update-data']);
@@ -176,6 +179,7 @@ watch(() => props.userDataDetail?.user_study_locations, initFromProps, {
 
 const handleSubmit = async () => {
     loading.value = true;
+    isLoading.value = true;
     try {
         const payload = selectedTypes.value.map(typeId => {
             const type = locationTypes.value.find(t => t.value === typeId);
@@ -202,6 +206,7 @@ const handleSubmit = async () => {
         proxy.$notification.error(e?.message || 'Cập nhật hình thức học thất bại!');
     } finally {
         loading.value = false;
+        isLoading.value = false;
     }
 }
 </script>

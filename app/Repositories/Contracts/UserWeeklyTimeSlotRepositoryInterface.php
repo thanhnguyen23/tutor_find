@@ -18,6 +18,11 @@ interface UserWeeklyTimeSlotRepositoryInterface
     public function create(array $data): UserWeeklyTimeSlot;
 
     /**
+     * Bulk create time slots
+     */
+    public function createMany(array $items): Collection;
+
+    /**
      * Update an existing time slot
      */
     public function update($id, $data);

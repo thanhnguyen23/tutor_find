@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class UserLanguage extends Model
 {
     use HasFactory;
-    protected $fillable = ['user_id', 'language_id', 'level_language_id', 'is_native'];
+    protected $fillable = ['uid', 'language_id', 'level_language_id', 'is_native'];
 
     protected $casts = [
         'is_native' => 'boolean',
@@ -16,7 +16,7 @@ class UserLanguage extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'uid', 'uid');
     }
 
     public function language()

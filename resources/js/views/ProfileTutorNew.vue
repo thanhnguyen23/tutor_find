@@ -10,11 +10,6 @@ import {
 import {
     useStore
 } from 'vuex';
-import Overview from '@/components/ProfileTutor/Overview.vue';
-import Schedule from '@/components/ProfileTutor/Schedule.vue';
-import Language from '@/components/ProfileTutor/Language.vue';
-import StudyMethod from '@/components/ProfileTutor/StudyMethod.vue';
-import ProfileInfo from '@/components/ProfileTutor/ProfileInfo.vue';
 import ProfileInfoNew from '../components/ProfileTutor/ProfileInfoNew.vue';
 import OverviewNew from '../components/ProfileTutor/OverviewNew.vue';
 import ScheduleNew from '../components/ProfileTutor/ScheduleNew.vue';
@@ -90,6 +85,8 @@ const getUserDataDetail = async () => {
             phone: response.data.phone,
             about_you: response.data.about_you
         });
+
+        console.log(userDataDetail.value);
     } catch (error) {
         console.error('Failed to fetch user data:', error);
     }
@@ -119,9 +116,7 @@ const calculateProfileCompletion = (userData) => {
         !empty(userData.wards_id) &&
         !empty(userData.address) &&
         !empty(userData.about_you) &&
-        !empty(userData.cccd) &&
-        !empty(userData.cccd_front) &&
-        !empty(userData.cccd_back);
+        !empty(userData.cccd);
 
     // Check education records (Học vấn ít nhất 1)
     completionDetails.education = userData.user_educations?.length > 0;

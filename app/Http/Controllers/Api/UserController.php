@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\TutorResource;
 use App\Http\Resources\UserResource;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use Illuminate\Http\Request;
@@ -18,7 +19,7 @@ class UserController extends Controller
         $this->userRepository = $userRepository;
     }
 
-    public function getTutors(Request $request)
+    public function search(Request $request)
     {
         try {
             $filters = $request->only([
@@ -27,13 +28,12 @@ class UserController extends Controller
                 'experience',
                 'provinces_id',
                 'sex',
-                'time_slot_start',
-                'time_slot_end',
                 'sort_by'
             ]);
 
             $allData = $this->userRepository->searchTutors($filters, self::PER_PAGE);
-            return UserResource::collection($allData)
+
+            return TutorResource::collection($allData)
             ->additional([
                 'success' => true,
             ]);
@@ -46,10 +46,15 @@ class UserController extends Controller
         }
     }
 
-    public function getTutorDetail($uid)
+    public function getTutor($uid)
     {
-        $tutor = $this->userRepository->getTutorDetailByUid($uid);
-        // Có thể custom lại response nếu cần
-        return response()->json(new UserResource($tutor));
+        $tutor = $this->userRepository->getUserDetailByUid($uid);
+        return response()->json(new TutorResource($tutor));
+    }
+
+    public function me()
+    {
+        $user = auth()->user();
+        return response()->json(new UserResource($user));
     }
 }

@@ -17,6 +17,7 @@ use App\Observers\UserSubjectObserver;
 use App\Observers\UserWeeklyTimeSlotObserver;
 use App\Observers\UserStudyLocationObserver;
 use App\Observers\UserLanguageObserver;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -36,6 +37,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Carbon::setLocale('vi');
+        date_default_timezone_set('Asia/Ho_Chi_Minh');
+
         if (app()->environment('local')) {
             URL::forceScheme('http');
         }

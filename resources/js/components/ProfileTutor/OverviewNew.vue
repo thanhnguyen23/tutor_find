@@ -1,6 +1,9 @@
 <template>
+<!-- Loading overlay -->
+<base-loading v-if="isLoading" />
+
 <!-- education-section -->
-<div class="section-card education-section">
+<div class="section-card education-section" v-if="!isLoading">
     <div class="header-wrapper">
         <div class="header-left">
             <div class="icon-wrapper">
@@ -67,7 +70,7 @@
             </div>
         </div>
 
-        <div class="add-new-item" @click="showAddEducationModal()">
+        <div class="add-new-item" @click="showAddEducationModal = true" v-if="userDataDetail.user_educations?.length == 0">
             <div class="icon-wrapper">
                 <svg class="icon-lg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M5 12h14"></path>
@@ -136,7 +139,7 @@
             </div>
         </div>
 
-        <div class="add-new-item" @click="showAddExperienceModal()">
+        <div class="add-new-item" @click="showAddExperienceModal = true" v-if="userDataDetail.user_experiences?.length == 0">
             <div class="icon-wrapper">
                 <svg class="icon-lg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M5 12h14"></path>
@@ -238,7 +241,7 @@
                 </div> -->
             </div>
         </div>
-        <div class="add-new-item" @click="showCreateSubjectModal()">
+        <div class="add-new-item" @click="showCreateSubjectModal = true" v-if="userDataDetail.user_subjects?.length == 0">
             <div class="icon-wrapper">
                 <svg class="icon-lg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M5 12h14"></path>
@@ -365,7 +368,7 @@
         </div>
     </div>
 
-    <div class="add-new-item" @click="showCreatePackageModal()">
+    <div class="add-new-item" @click="showCreatePackageModal()" v-if="userDataDetail.user_packages?.length == 0">
         <div class="icon-wrapper">
             <svg class="icon-lg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M5 12h14"></path>
@@ -448,7 +451,7 @@
             </div>
         </div>
 
-        <div class="add-new-item" @click="showAddLanguageModal()">
+        <div class="add-new-item" @click="showAddLanguageModal()" v-if="userDataDetail.user_languages?.length == 0">
             <div class="icon-wrapper">
                 <svg class="icon-lg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M5 12h14"></path>
@@ -777,7 +780,8 @@ import {
     onMounted,
     getCurrentInstance,
     computed,
-    watch
+    watch,
+    toRaw
 } from 'vue';
 import { useStore } from 'vuex';
 
@@ -812,6 +816,7 @@ const selectedPackage = ref(null);
 const currentPackageIndexes = ref({});
 const selectedLevelsOfSubject = ref([]);
 const selectedLanguageId = ref(null);
+const isLoading = ref(false);
 
 // File preview refs
 const educationCertificatePreview = ref(null);
@@ -945,6 +950,7 @@ const languageOptions = computed(() => {
 const levelOptions = computed(() => store.state.configuration.levelLanguages);
 
 const updateEducation = async () => {
+    isLoading.value = true;
     try {
         const formData = new FormData();
         formData.append('id', userDataAction.education.id);
@@ -977,6 +983,8 @@ const updateEducation = async () => {
     } catch (error) {
         proxy.$notification.error(error?.message || 'Cập nhật học vấn thất bại!');
         console.error('Failed to update education:', error);
+    } finally {
+        isLoading.value = false;
     }
 };
 
@@ -1129,11 +1137,17 @@ const showEditPackage = (packageItem) => {
 const addNewPackage = async () => {
     try {
         const features = packageFeatures.value.filter(f => f.trim() !== '');
+
+        const plainNewPackage = {
+            ...toRaw(newPackage.value)
+        };
+
+        // Send plain data to the API
         const response = await proxy.$api.apiPost('me/packages', {
-            ...newPackage,
+            ...plainNewPackage,
             features
         });
-        // Update the original data with the new package
+
         const updatedData = {
             ...props.userDataDetail,
             user_packages: [...props.userDataDetail.user_packages, response.data]

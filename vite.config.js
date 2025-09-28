@@ -11,6 +11,10 @@ export default defineConfig({
             '@components': path.resolve(__dirname, './resources/js/components'),
             '@utils': path.resolve(__dirname, './resources/js/utils'),
             '@api': path.resolve(__dirname, './resources/js/api'),
+            'randombytes': 'randombytes/browser',
+            'readable-stream': 'readable-stream',
+            'stream': 'readable-stream',
+            'simple-peer': 'simple-peer/simplepeer.min.js',
         },
     },
     plugins: [
@@ -36,5 +40,6 @@ export default defineConfig({
             APP_URL: process.env.APP_URL, // Biến từ Laravel .env
             APP_NAME: process.env.APP_NAME,
         },
+        global: 'globalThis',
     },
 });

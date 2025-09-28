@@ -7,7 +7,6 @@ import {
     computed,
     watch,
 } from 'vue';
-import BasePagination from '@/components/BasePagination.vue';
 
 const {
     proxy
@@ -57,7 +56,7 @@ const fetchNotifications = async (page = 1) => {
 
     const response = await proxy.$api.apiGet('notifications', params);
     notifications.value = response.data || [];
-    meta.value = response.meta || null;``
+    meta.value = response.meta || null;
 };
 
 // Xử lý chuyển trang
@@ -115,7 +114,7 @@ onMounted(() => fetchNotifications());
                             <div class="title-wrapper">
                                 <span class="title-main">{{ notification.name }}</span>
                                 <span class="sub-title">Lịch học</span>
-                                <span v-if="!notification.read" class="dot-unread"></span>
+                                <span v-if="!notification.is_read" class="dot-unread"></span>
                             </div>
                         </div>
                         <div class="notification-right">
@@ -140,7 +139,7 @@ onMounted(() => fetchNotifications());
                     </div>
                 </div>
             </div>
-            <BasePagination v-if="meta" :meta="meta" @changePage="handleChangePage" />
+            <base-pagination v-if="meta" :meta="meta" @changePage="handleChangePage" />
         </div>
     </div>
 </div>

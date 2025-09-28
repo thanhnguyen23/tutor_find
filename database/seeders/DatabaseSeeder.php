@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             SubjectSeeder::class,
+            TimeSlotSeeder::class,
             UserSeeder::class,
             UserSubjectSeeder::class,
             PackageSeeder::class,
